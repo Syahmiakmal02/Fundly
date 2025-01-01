@@ -1,0 +1,241 @@
+* {
+    box-sizing: border-box;
+}
+
+body {
+    font-family: Arial;
+    padding: 10px;
+    background: #f1f1f1;
+}
+
+.container {
+    padding: 20px;
+}
+
+/* Header/Blog Title */
+.header {
+    text-align: center;
+    background: white;
+}
+
+.header p {
+    color: #1A4870;
+}
+
+.header h1 {
+    font-size: 40px;
+    margin: 0;
+}
+
+h4{
+    margin: 10px 0; 
+}
+
+#content {
+    margin-top: 10px;
+}
+
+/* Style the top navigation bar */
+.topnav {
+    overflow: hidden;
+    background-color: #1F316F;
+    border-radius: 10px;
+}
+
+/* Style the topnav links */
+.topnav a {
+    float: left;
+    display: block;
+    color: #f2f2f2;
+    text-align: center;
+    padding: 14px 16px;
+    text-decoration: none;
+
+}
+
+/* Change color on hover */
+.topnav a:hover {
+    background-color: #ddd;
+    color: black;
+}
+
+/* Create two unequal columns that floats next to each other */
+/* Left column */
+.leftcolumn {
+    float: left;
+    width: 75%;
+}
+
+/* Right column */
+.rightcolumn {
+    float: left;
+    width: 25%;
+    padding-left: 10px;
+    overflow: hidden;
+}
+
+/* Add a card effect for articles */
+.card {
+    background-color: white;
+    padding: 10px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+    margin-bottom: 10px;
+}
+
+.main-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 10px;
+}
+
+/* Clear floats after the columns */
+.row::after {
+    content: "";
+    display: table;
+    clear: both;
+}
+
+/* Footer */
+.footer {
+    padding: 20px;
+    text-align: center;
+    background: #ddd;
+    margin-top: 20px;
+    border-radius: 10px;
+}
+
+/* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
+@media screen and (max-width: 800px) {
+
+    .leftcolumn,
+    .rightcolumn {
+        width: 100%;
+        padding: 0;
+    }
+}
+
+/* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
+@media screen and (max-width: 400px) {
+    .topnav a {
+        float: none;
+        width: 100%;
+    }
+}
+
+hr {
+    border: none; 
+    height: 1px; 
+    background-color: #ddd; 
+    margin: 20px 0; 
+    opacity: 0.5; 
+}
+
+/* BMI Form Styles */
+#bmiForm {
+    width: 100%;
+    padding: 20px;
+    border-radius: 8px;
+    margin: 20px auto;
+    padding-top: 0px;
+}
+
+#bmiForm label {
+    display: block;
+    margin: 10px 0 5px;
+    color: #333;
+    font-weight: 500;
+}
+
+#bmiForm input[type="text"],
+#bmiForm input[type="number"] {
+    width: 100%;
+    padding: 8px;
+    margin-bottom: 15px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+
+#bmiForm input[type="radio"] {
+    margin-right: 8px;
+    cursor: pointer;
+}
+
+#bmiForm input[type="radio"] + br {
+    margin-bottom: 5px;
+}
+
+#bmiForm input[type="submit"] {
+    width: 100%;
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    transition: background-color 0.3s ease;
+}
+
+#bmiForm input[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+#bmiForm input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+}
+
+
+#bmiForm input[type="text"]:valid,
+#bmiForm input[type="number"]:valid {
+    border-color: #00c98c;
+}
+
+#bmi {
+    display: none; /* Hide all content by default */
+}
+
+/* table */
+#bmi_result{
+    margin: 20px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 20px 0;
+    padding: 10px;
+}
+
+table, th, td {
+    border: 1px solid #ddd;
+}
+
+th, td {
+    padding: 8px;
+    text-align: left;
+}
+
+th {
+    background-color: #9baae1;
+}
+
+tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+/* end table */
+
+#home {
+    flex: 1;
+    padding: 20px;
+    margin: 0;
+    min-height: calc(60vh - 20px); /* Adjust 60px based on footer height */
+    box-sizing: border-box;
+}
