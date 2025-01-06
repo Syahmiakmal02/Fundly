@@ -1,5 +1,3 @@
-<link rel="stylesheet" href="css/budget.css">
-
 <?php
 include('auth/db_config.php');
 
@@ -156,8 +154,8 @@ foreach ($budgets as $budget) {
             </form>
         </div>
     </div>
-    <div class="rightcolumn">
-        <div class="card">
+    <div class="rightcolumn" id="budget-rightcolumn">
+        <div class="card" id="budget-summary">
             <h2>Budget Summary</h2>
             <p>Total Budget: RM <?php echo number_format($total_budget, 2); ?></p>
         </div>

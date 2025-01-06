@@ -1,15 +1,21 @@
 /* General Reset */
 body {
-    font-family: Poppins;
+    font-family: poppins;
     padding: 10px;
-    background-color: #f4f4f9;
-    color: #333;
-    line-height: 1.6;
+    background: #f1f1f1;
 }
 
 a {
     text-decoration: none;
     color: #007bff;
+}
+
+#budget-summary{
+    margin: 0px;
+}
+
+#budget-rightcolumn{
+    padding-top: 0px;
 }
 
 a:hover {
