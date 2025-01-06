@@ -3,12 +3,14 @@
 }
 
 body {
-    font-family: Arial;
+    font-family: poppins;
     padding: 10px;
     background: #f1f1f1;
 }
 
 .container {
+    /* display: flex; */
+    gap: 20px;
     padding: 20px;
 }
 
@@ -34,47 +36,158 @@ h4{
 #content {
     margin-top: 10px;
 }
-
-/* Style the top navigation bar */
-.topnav {
-    overflow: hidden;
+/* Navigation Styles */
+.nav-wrapper {
     background-color: #1F316F;
+    border-radius: 10px;
+    position: relative;
+    margin-bottom: 10px;
+}
+
+.topnav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #1F316F; /* Background color for the navigation bar */
+    /* padding: 4px 14px; */
     border-radius: 10px;
 }
 
-/* Style the topnav links */
 .topnav a {
-    float: left;
-    display: block;
     color: #f2f2f2;
     text-align: center;
-    padding: 14px 16px;
+    padding: 10px 15px;
     text-decoration: none;
-
+    font-size: 16px;
 }
 
-/* Change color on hover */
+.topnav a.active {
+    background-color: #344eaf; /* Highlight color (e.g., green) */
+    color: white; /* Text color for the active link */
+    border-radius: 5px; /* Optional: rounded corners for active link */
+}
+
 .topnav a:hover {
+    background-color: #344eaf;
+    color: white;
+    border-radius: 5px;
+}
+
+.topnav .dropdown {
+    margin-left: auto; /* Pushes the dropdown to the right */
+    position: relative;
+}
+
+.topnav .dropbtn {
+    background-color: #1F316F;
+    color: white;
+    padding: 10px 15px;
+    border: none;
+    cursor: pointer;
+}
+
+.topnav .dropbtn:hover {
     background-color: #ddd;
     color: black;
 }
 
-/* Create two unequal columns that floats next to each other */
-/* Left column */
-.leftcolumn {
-    float: left;
-    width: 75%;
+.topnav a:last-child {
+    margin-left: auto; /* Ensures the login link floats to the right */
 }
 
-/* Right column */
-.rightcolumn {
-    float: left;
-    width: 25%;
-    padding-left: 10px;
-    overflow: hidden;
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    margin-left: auto; /* This pushes the dropdown to the right */
+    margin-right: 10px;
 }
 
-/* Add a card effect for articles */
+.dropbtn {
+    background-color: transparent;
+    color: #f2f2f2;
+    padding: 14px 16px;
+    border: none;
+    cursor: pointer;
+    font-family: Arial;
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.arrow {
+    border: solid #f2f2f2;
+    border-width: 0 2px 2px 0;
+    display: inline-block;
+    padding: 3px;
+    transform: rotate(45deg);
+    -webkit-transform: rotate(45deg);
+    margin-left: 5px;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #f9f9f9;
+    min-width: 160px;
+    box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
+    z-index: 1000;
+    border-radius: 4px;
+}
+
+.dropdown:hover .dropdown-content {
+    display: block;
+}
+
+.dropdown-content a {
+    color: #333;
+    padding: 12px 16px;
+    text-decoration: none;
+    display: block;
+    text-align: left;
+}
+
+.dropdown-content a:hover {
+    background-color: #ddd;
+}
+
+.dropdown-content .logout-option {
+    color: #dd0c2f;
+    border-top: 1px solid #eee;
+}
+
+.dropdown-content .logout-option:hover {
+    background-color: #fff0f0;
+    color : #dd0c2f;
+}
+
+.dropdown:hover .dropbtn {
+    background-color: #ddd;
+    color: black;
+}
+
+.dropdown:hover .arrow {
+    border-color: black;
+}
+
+/* Login Button */
+.logout-btn {
+    background-color: #dd0c2f;
+    color: rgb(0, 0, 0);
+    padding: 8px 15px;
+    text-decoration: none;
+    border-radius: 4px;
+}
+
+.logout-btn:hover {
+    background-color: #153856;
+    color: black;
+}
+
+/* Card Styles */
 .card {
     background-color: white;
     padding: 10px;
@@ -84,22 +197,7 @@ h4{
     margin-bottom: 10px;
 }
 
-.main-card {
-    background-color: white;
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    margin-top: 10px;
-}
-
-/* Clear floats after the columns */
-.row::after {
-    content: "";
-    display: table;
-    clear: both;
-}
-
-/* Footer */
+/* Footer Styles */
 .footer {
     padding: 20px;
     text-align: center;
@@ -108,9 +206,17 @@ h4{
     border-radius: 10px;
 }
 
-/* Responsive layout - when the screen is less than 800px wide, make the two columns stack on top of each other instead of next to each other */
-@media screen and (max-width: 800px) {
+/* Horizontal Rule */
+hr {
+    border: none;
+    height: 1px;
+    background-color: #ddd;
+    margin: 20px 0;
+    opacity: 0.5;
+}
 
+/* Responsive Design */
+@media screen and (max-width: 800px) {
     .leftcolumn,
     .rightcolumn {
         width: 100%;
@@ -118,124 +224,27 @@ h4{
     }
 }
 
-/* Responsive layout - when the screen is less than 400px wide, make the navigation links stack on top of each other instead of next to each other */
 @media screen and (max-width: 400px) {
+    .topnav {
+        flex-direction: column;
+    }
+    
     .topnav a {
-        float: none;
         width: 100%;
+    }
+    
+    .dropdown {
+        width: 100%;
+    }
+    
+    .dropbtn {
+        width: 100%;
+        justify-content: center;
     }
 }
 
-hr {
-    border: none; 
-    height: 1px; 
-    background-color: #ddd; 
-    margin: 20px 0; 
-    opacity: 0.5; 
-}
-
-/* BMI Form Styles */
-#bmiForm {
-    width: 100%;
-    padding: 20px;
-    border-radius: 8px;
-    margin: 20px auto;
-    padding-top: 0px;
-}
-
-#bmiForm label {
-    display: block;
-    margin: 10px 0 5px;
-    color: #333;
-    font-weight: 500;
-}
-
-#bmiForm input[type="text"],
-#bmiForm input[type="number"] {
-    width: 100%;
-    padding: 8px;
-    margin-bottom: 15px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-
-#bmiForm input[type="radio"] {
-    margin-right: 8px;
-    cursor: pointer;
-}
-
-#bmiForm input[type="radio"] + br {
-    margin-bottom: 5px;
-}
-
-#bmiForm input[type="submit"] {
-    width: 100%;
-    padding: 10px;
-    background-color: #007bff;
-    color: white;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    font-size: 16px;
-    transition: background-color 0.3s ease;
-}
-
-#bmiForm input[type="submit"]:hover {
-    background-color: #0056b3;
-}
-
-#bmiForm input:focus {
-    outline: none;
-    border-color: #007bff;
-    box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
-}
-
-
-#bmiForm input[type="text"]:valid,
-#bmiForm input[type="number"]:valid {
-    border-color: #00c98c;
-}
-
-#bmi {
-    display: none; /* Hide all content by default */
-}
-
-/* table */
-#bmi_result{
-    margin: 20px;
-}
-
-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin: 20px 0;
-    padding: 10px;
-}
-
-table, th, td {
-    border: 1px solid #ddd;
-}
-
-th, td {
-    padding: 8px;
-    text-align: left;
-}
-
-th {
-    background-color: #9baae1;
-}
-
-tr:nth-child(even) {
-    background-color: #f9f9f9;
-}
-
-/* end table */
-
-#home {
-    flex: 1;
-    padding: 20px;
-    margin: 0;
-    min-height: calc(60vh - 20px); /* Adjust 60px based on footer height */
-    box-sizing: border-box;
+.clearfix::after {
+    content: "";
+    display: table;
+    clear: both;
 }

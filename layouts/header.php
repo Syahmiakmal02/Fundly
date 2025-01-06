@@ -2,7 +2,7 @@
 // header.php
 
 // Include the database configuration file
-require_once 'db_config.php';
+require_once 'auth/db_config.php';
 
 $page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 

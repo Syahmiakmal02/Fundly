@@ -1,0 +1,13 @@
+#dashboard {
+    display: flex;
+}
+
+.left-column {
+    flex: 3;
+}
+
+.right-column {
+    flex: 1;
+    border-left: 1px solid #ccc;
+    padding-left: 20px;
+}
