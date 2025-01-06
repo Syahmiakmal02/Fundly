@@ -1,0 +1,64 @@
+.savings-container {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+}
+
+.savings-header {
+    text-align: center;
+    margin-bottom: 3rem;
+}
+
+.savings-content {
+    display: flex;
+    gap: 2rem;
+}
+
+.add-goal {
+    width: 50%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px;
+}
+
+.goal-list {
+    width: 50%;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 20px;
+    margin: 10px;
+}
+
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-group input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 1px solid #dfe6e9;
+    border-radius: 5px;
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th, td {
+    padding: 1rem;
+    text-align: left;
+}
+
+@media (max-width: 992px) {
+    .savings-content {
+        flex-direction: column;
+    }
+    
+    .add-goal, .goal-list {
+        width: 100%;
+    }
+}

@@ -31,6 +31,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/budget.css">
+    <link rel="stylesheet" href="css/saving.css">
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 

@@ -1,85 +1,114 @@
 <?php
-if ($_SERVER["REQUEST_METHOD"] == "POST") {
-    $user_id = 1; // Static user ID (replace with session or dynamic data as needed)
+// Config and Initialization
+include('auth/db_config.php');
+$user_id = 1; // Static user ID (replace with session)
+
+// Form Handler
+function handleSavingGoalSubmission($conn, $user_id) {
+    if ($_SERVER["REQUEST_METHOD"] != "POST") return null;
+
     $goal_name = $_POST['goal_name'];
     $goal_amount = $_POST['goal_amount'];
     $account = $_POST['account'];
     $due_date = $_POST['due_date'];
 
-    include('auth/db_config.php');
-
-    $sql = "INSERT INTO savings (user_id, goal_name, goal_amount, account, due_date) VALUES (?, ?, ?, ?, ?)";
-
-    $stmt = $conn->prepare($sql);
+    $stmt = $conn->prepare("INSERT INTO savings (user_id, goal_name, goal_amount, account, due_date) VALUES (?, ?, ?, ?, ?)");
     $stmt->bind_param("isiss", $user_id, $goal_name, $goal_amount, $account, $due_date);
 
-    if ($stmt->execute()) {
-        $stmt->close();
-        $conn->close();
-        header("Location: index.php?page=saving");
-        exit();
-    } else {
-        echo "Error: " . $stmt->error;
-    }
+    $success = $stmt->execute();
+    $error = $success ? null : $stmt->error;
 
     $stmt->close();
-    $conn->close();
+
+    if ($success) {
+        header("Location: index.php?page=saving");
+        exit();
+    }
+    return $error;
 }
+
+// Data Fetcher
+function fetchSavingGoals($conn, $user_id) {
+    $sql = "SELECT goal_name, goal_amount, account, due_date FROM savings WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
+// Main Execution
+$error = handleSavingGoalSubmission($conn, $user_id);
+$savings_data = fetchSavingGoals($conn, $user_id);
+$total_saving = 0;
 ?>
 
-<div class="">
-    <div class="container">
-        <h1>Saving</h1>
-        <p>Here you can see your saving</p>
-    </div>
-    <div class="add-goal">
+<!-- Main Container -->
+<div class="savings-container">
+    <!-- Error Display -->
+    <?php if ($error): ?>
+        <div class="error-message"><?php echo htmlspecialchars($error); ?></div>
+    <?php endif; ?>
+
+    <!-- Add Goal Form -->
+    <section class="add-goal">
         <h2>Add Saving Goal</h2>
-        <form action="" method="POST">
-            <label for="goal_name">Goal Name:</label>
-            <input type="text" id="goal_name" name="goal_name" required>
+        <form action="index.php?page=saving" method="POST">
+            <div class="form-group">
+                <label for="goal_name">Goal Name</label>
+                <input type="text" id="goal_name" name="goal_name" required>
+            </div>
 
-            <label for="goal_amount">Total Save:</label>
-            <input type="number" id="goal_amount" name="goal_amount" required>
+            <div class="form-group">
+                <label for="goal_amount">Target Amount</label>
+                <input type="number" id="goal_amount" name="goal_amount" required>
+            </div>
 
-            <label for="account">Account:</label>
-            <input type="text" id="account" name="account" required>
+            <div class="form-group">
+                <label for="account">Account</label>
+                <input type="text" id="account" name="account" required>
+            </div>
 
-            <label for="due_date">Due Date:</label>
-            <input type="date" id="due_date" name="due_date" required>
+            <div class="form-group">
+                <label for="due_date">Due Date</label>
+                <input type="date" id="due_date" name="due_date" required>
+            </div>
 
-            <button type="submit">Add Goal</button>
+            <button type="submit" class="btn-submit">Add Goal</button>
         </form>
-    </div>
+    </section>
 
-<div class="goal-list">
-    <h2>Your Saving Goals</h2>
-    <?php
-
-
-    // $conn = new mysqli('localhost', 'root', 'password', 'fundly');
-
-    // if ($conn->connect_error) {
-    //     die("Connection failed: " . $conn->connect_error);
-    // }
-
-    include('auth/db_config.php');
-
-    $sql = "SELECT goal_name, goal_amount, account, due_date FROM savings WHERE user_id = 1";
-    $result = $conn->query($sql);
-
-    $total_saving = 0;
-
-    if ($result->num_rows > 0) {
-        echo "<table border='1'><tr><th>Goal Name</th><th>Total Save</th><th>Account</th><th>Due Date</th></tr>";
-        while ($row = $result->fetch_assoc()) {
-            $total_saving += $row['goal_amount'];
-            echo "<tr><td>" . htmlspecialchars($row['goal_name']) . "</td><td>" . htmlspecialchars($row['goal_amount']) . "</td><td>" . htmlspecialchars($row['account']) . "</td><td>" . htmlspecialchars($row['due_date']) . "</td></tr>";
-        }
-        echo "</table>";
-        echo "<h3>Total Savings: $total_saving</h3>";
-    } else {
-        echo "<p>No goals found.</p>";
-    }
-    $conn->close();
-    ?>
+    <!-- Goals List -->
+    <section class="goal-list">
+        <h2>Your Saving Goals</h2>
+        <?php if ($savings_data && $savings_data->num_rows > 0): ?>
+            <table>
+                <thead>
+                    <tr>
+                        <th>Goal</th>
+                        <th>Amount</th>
+                        <th>Account</th>
+                        <th>Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <?php while ($row = $savings_data->fetch_assoc()):
+                        $total_saving += $row['goal_amount']; ?>
+                        <tr>
+                            <td><?php echo htmlspecialchars($row['goal_name']); ?></td>
+                            <td>$<?php echo number_format($row['goal_amount'], 2); ?></td>
+                            <td><?php echo htmlspecialchars($row['account']); ?></td>
+                            <td><?php echo htmlspecialchars($row['due_date']); ?></td>
+                        </tr>
+                    <?php endwhile; ?>
+                </tbody>
+            </table>
+            <div class="total-savings">
+                <h3>Total Savings: $<?php echo number_format($total_saving, 2); ?></h3>
+            </div>
+        <?php else: ?>
+            <p class="no-goals">No saving goals found. Start by adding a new goal!</p>
+        <?php endif; ?>
+    </section>
 </div>
+
+<?php $conn->close(); ?>
