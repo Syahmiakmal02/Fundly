@@ -10,6 +10,12 @@ $message = '';
 $user_id = 1; // Hardcoded user_id for testing
 $edit_data = null;
 
+// Retrieve message from session if exists
+if (isset($_SESSION['message'])) {
+    $message = $_SESSION['message'];
+    unset($_SESSION['message']); // Clear the message after retrieving
+}
+
 // Handle Insert
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete']) && !isset($_POST['update'])) {
     if (!$conn) {
@@ -26,11 +32,13 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete']) && !isset(
     if ($stmt) {
         $stmt->bind_param("isds", $user_id, $category, $amount, $month);
         if ($stmt->execute()) {
-            $message = "Budget entry successfully saved!";
+            $_SESSION['message'] = "Budget entry successfully saved!";
         } else {
-            $message = "Error: " . $stmt->error;
+            $_SESSION['message'] = "Error: " . $stmt->error;
         }
         $stmt->close();
+        header("Location: index.php?page=budget");
+        exit();
     }
 }
 
@@ -58,11 +66,13 @@ if (isset($_POST['delete']) && isset($_POST['budget_id'])) {
     if ($delete_stmt) {
         $delete_stmt->bind_param("ii", $budget_id, $user_id);
         if ($delete_stmt->execute()) {
-            $message = "Budget entry deleted successfully!";
+            $_SESSION['message'] = "Budget entry deleted successfully!";
         } else {
-            $message = "Error deleting entry: " . $delete_stmt->error;
+            $_SESSION['message'] = "Error deleting entry: " . $delete_stmt->error;
         }
         $delete_stmt->close();
+        header("Location: index.php?page=budget");
+        exit();
     }
 }
 
@@ -78,20 +88,39 @@ if (isset($_POST['update']) && isset($_POST['budget_id'])) {
     if ($update_stmt) {
         $update_stmt->bind_param("sdsii", $category, $amount, $month, $budget_id, $user_id);
         if ($update_stmt->execute()) {
-            $message = "Budget entry updated successfully!";
+            $_SESSION['message'] = "Budget entry updated successfully!";
         } else {
-            $message = "Error updating entry: " . $update_stmt->error;
+            $_SESSION['message'] = "Error updating entry: " . $update_stmt->error;
         }
         $update_stmt->close();
+        header("Location: index.php?page=budget");
+        exit();
     }
 }
 
-// Fetch existing budget entries
+// Pagination settings
+$entries_per_page = 8;
+$current_page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
+$offset = ($current_page - 1) * $entries_per_page;
+
+// Get total number of entries for pagination
+$total_entries_sql = "SELECT COUNT(*) as count FROM Budgets WHERE user_id = ?";
+$total_stmt = $conn->prepare($total_entries_sql);
+if ($total_stmt) {
+    $total_stmt->bind_param("i", $user_id);
+    $total_stmt->execute();
+    $result = $total_stmt->get_result();
+    $total_entries = $result->fetch_assoc()['count'];
+    $total_pages = ceil($total_entries / $entries_per_page);
+    $total_stmt->close();
+}
+
+// Fetch existing budget entries with pagination
 $budgets = array();
-$sql = "SELECT * FROM Budgets WHERE user_id = ? ORDER BY month DESC";
+$sql = "SELECT * FROM Budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
 $stmt = $conn->prepare($sql);
 if ($stmt) {
-    $stmt->bind_param("i", $user_id);
+    $stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
     $stmt->execute();
     $result = $stmt->get_result();
     while ($row = $result->fetch_assoc()) {
@@ -100,10 +129,17 @@ if ($stmt) {
     $stmt->close();
 }
 
-// Calculate total budget
+// Calculate total budget (using all entries, not just paginated ones)
 $total_budget = 0;
-foreach ($budgets as $budget) {
-    $total_budget += $budget['amount'];
+$total_sql = "SELECT SUM(amount) as total FROM Budgets WHERE user_id = ?";
+$total_stmt = $conn->prepare($total_sql);
+if ($total_stmt) {
+    $total_stmt->bind_param("i", $user_id);
+    $total_stmt->execute();
+    $total_result = $total_stmt->get_result();
+    $total_row = $total_result->fetch_assoc();
+    $total_budget = $total_row['total'] ?? 0;
+    $total_stmt->close();
 }
 ?>
 
@@ -186,6 +222,27 @@ foreach ($budgets as $budget) {
                     </tr>
                     <?php endforeach; ?>
                 </table>
+
+                <!-- Pagination -->
+                <?php if ($total_pages > 1): ?>
+                <div class="pagination">
+                    <?php if ($current_page > 1): ?>
+                        <a href="index.php?page=budget&p=<?php echo ($current_page - 1); ?>" class="pagination-link">&laquo; Previous</a>
+                    <?php endif; ?>
+                    
+                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
+                        <?php if ($i == $current_page): ?>
+                            <span class="pagination-link active"><?php echo $i; ?></span>
+                        <?php else: ?>
+                            <a href="index.php?page=budget&p=<?php echo $i; ?>" class="pagination-link"><?php echo $i; ?></a>
+                        <?php endif; ?>
+                    <?php endfor; ?>
+                    
+                    <?php if ($current_page < $total_pages): ?>
+                        <a href="index.php?page=budget&p=<?php echo ($current_page + 1); ?>" class="pagination-link">Next &raquo;</a>
+                    <?php endif; ?>
+                </div>
+                <?php endif; ?>
             <?php else: ?>
                 <p>No budget entries found.</p>
             <?php endif; ?>
