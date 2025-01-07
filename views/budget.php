@@ -1,8 +1,24 @@
 <?php
 // Config and Initialization
 include('auth/db_config.php');
-$user_id = 1; // Static user ID (replace with session)
 $entries_per_page = 8;
+
+// Fetch user ID from database based on session email
+if (isset($_SESSION['email'])) {
+    $email = $_SESSION['email'];
+    $sql = "SELECT user_id FROM users WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($user_id);
+    $stmt->fetch();
+    $stmt->close();
+} else {
+    // Handle case where session email is not set
+    $_SESSION['error'] = "User not logged in!";
+    header("Location: ../auth/login.php");
+    exit();
+}
 
 // Form Handlers
 function handleBudgetSubmission($conn, $user_id) {
@@ -24,7 +40,7 @@ function handleInsert($conn, $user_id, $data) {
     $amount = floatval($data['amount']);
     $month = $conn->real_escape_string($data['month']);
 
-    $sql = "INSERT INTO Budgets (user_id, category, amount, month) VALUES (?, ?, ?, ?)";
+    $sql = "INSERT INTO budgets (user_id, category, amount, month) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -49,7 +65,7 @@ function handleUpdate($conn, $user_id, $data) {
     $amount = floatval($data['amount']);
     $month = $conn->real_escape_string($data['month']);
 
-    $sql = "UPDATE Budgets SET category = ?, amount = ?, month = ? WHERE budget_id = ? AND user_id = ?";
+    $sql = "UPDATE budgets SET category = ?, amount = ?, month = ? WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -70,7 +86,7 @@ function handleUpdate($conn, $user_id, $data) {
 
 function handleDelete($conn, $user_id, $budget_id) {
     $budget_id = intval($budget_id);
-    $sql = "DELETE FROM Budgets WHERE budget_id = ? AND user_id = ?";
+    $sql = "DELETE FROM budgets WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -91,7 +107,7 @@ function handleDelete($conn, $user_id, $budget_id) {
 
 // Data Fetchers
 function fetchEditData($conn, $user_id, $budget_id) {
-    $sql = "SELECT * FROM Budgets WHERE budget_id = ? AND user_id = ?";
+    $sql = "SELECT * FROM budgets WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -107,7 +123,7 @@ function fetchEditData($conn, $user_id, $budget_id) {
 
 function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page) {
     $offset = ($current_page - 1) * $entries_per_page;
-    $sql = "SELECT * FROM Budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
+    $sql = "SELECT * FROM budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -121,7 +137,7 @@ function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page) {
 }
 
 function calculateTotalBudget($conn, $user_id) {
-    $sql = "SELECT SUM(amount) as total FROM Budgets WHERE user_id = ?";
+    $sql = "SELECT SUM(amount) as total FROM budgets WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
@@ -136,7 +152,7 @@ function calculateTotalBudget($conn, $user_id) {
 }
 
 function getPaginationData($conn, $user_id, $entries_per_page) {
-    $sql = "SELECT COUNT(*) as count FROM Budgets WHERE user_id = ?";
+    $sql = "SELECT COUNT(*) as count FROM budgets WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
     
     if ($stmt) {
