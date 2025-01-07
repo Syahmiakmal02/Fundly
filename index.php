@@ -18,6 +18,25 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     header("Location: index.php");
     exit();
 }
+
+//function check name to dynamically change icon
+function checkName($name)
+{
+    if ($name == 'dashboard') {
+        return '<i class="fas fa-home"></i>';
+    } elseif ($name == 'budget') {
+        return '<i class="fas fa-wallet"></i>';
+    } elseif ($name == 'expenses') {
+        return '<i class="fas fa-receipt"></i>';
+    } elseif ($name == 'saving') {
+        return '<i class="fas fa-piggy-bank"></i>';
+    } elseif ($name == 'profile') {
+        return '<i class="fas fa-user-circle"></i>';
+    } elseif (empty($name)) {
+        return '';
+    }
+    return $name;
+}
 ?>
 <!DOCTYPE html>
 <html>
@@ -27,7 +46,7 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-    
+
     <link rel="stylesheet" href="css/styles.css">
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/budget.css">
@@ -41,7 +60,11 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 <body>
     <div class="card">
         <div class="header">
-            <h1><?php echo htmlspecialchars($website_name); ?></h1>
+            <h1> <?php 
+                $icon = checkName($page);
+                echo $icon . ' ' . htmlspecialchars($website_name); 
+                ?>
+            </h1>
             <p><?php echo htmlspecialchars($website_desc); ?></p>
         </div>
         <div class="nav-wrapper">

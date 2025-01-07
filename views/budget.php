@@ -1,148 +1,183 @@
 <?php
+// Config and Initialization
 include('auth/db_config.php');
+$user_id = 1; // Static user ID (replace with session)
+$entries_per_page = 8;
 
-// Ensure the connection is active
-if (!$conn || $conn->connect_error) {
-    die("Database connection is not active or failed.");
-}
-
-$message = '';
-$user_id = 1; // Hardcoded user_id for testing
-$edit_data = null;
-
-// Retrieve message from session if exists
-if (isset($_SESSION['message'])) {
-    $message = $_SESSION['message'];
-    unset($_SESSION['message']); // Clear the message after retrieving
-}
-
-// Handle Insert
-if ($_SERVER['REQUEST_METHOD'] === 'POST' && !isset($_POST['delete']) && !isset($_POST['update'])) {
-    if (!$conn) {
-        die("Database connection is closed.");
+// Form Handlers
+function handleBudgetSubmission($conn, $user_id) {
+    if ($_SERVER['REQUEST_METHOD'] != 'POST') return null;
+    
+    if (isset($_POST['delete'])) {
+        return handleDelete($conn, $user_id, $_POST['budget_id']);
     }
+    
+    if (isset($_POST['update'])) {
+        return handleUpdate($conn, $user_id, $_POST);
+    }
+    
+    return handleInsert($conn, $user_id, $_POST);
+}
 
-    $category = $conn->real_escape_string($_POST['category']);
-    $amount = isset($_POST['amount']) ? floatval($_POST['amount']) : null;
-    $month = $conn->real_escape_string($_POST['month']);
+function handleInsert($conn, $user_id, $data) {
+    $category = $conn->real_escape_string($data['category']);
+    $amount = floatval($data['amount']);
+    $month = $conn->real_escape_string($data['month']);
 
     $sql = "INSERT INTO Budgets (user_id, category, amount, month) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-
+    
     if ($stmt) {
         $stmt->bind_param("isds", $user_id, $category, $amount, $month);
-        if ($stmt->execute()) {
-            $_SESSION['message'] = "Budget entry successfully saved!";
-        } else {
-            $_SESSION['message'] = "Error: " . $stmt->error;
-        }
+        $success = $stmt->execute();
+        $error = $success ? null : $stmt->error;
         $stmt->close();
-        header("Location: index.php?page=budget");
-        exit();
-    }
-}
-
-// Handle Edit Form Display
-if (isset($_GET['edit']) && isset($_GET['budget_id'])) {
-    $budget_id = intval($_GET['budget_id']);
-    $edit_sql = "SELECT * FROM Budgets WHERE budget_id = ? AND user_id = ?";
-    $edit_stmt = $conn->prepare($edit_sql);
-    if ($edit_stmt) {
-        $edit_stmt->bind_param("ii", $budget_id, $user_id);
-        $edit_stmt->execute();
-        $edit_result = $edit_stmt->get_result();
-        if ($edit_result->num_rows > 0) {
-            $edit_data = $edit_result->fetch_assoc();
+        
+        if ($success) {
+            $_SESSION['message'] = "Budget entry successfully saved!";
+            header("Location: index.php?page=budget");
+            exit();
         }
-        $edit_stmt->close();
+        return $error;
     }
+    return "Failed to prepare statement";
 }
 
-// Handle Delete
-if (isset($_POST['delete']) && isset($_POST['budget_id'])) {
-    $budget_id = intval($_POST['budget_id']);
-    $delete_sql = "DELETE FROM Budgets WHERE budget_id = ? AND user_id = ?";
-    $delete_stmt = $conn->prepare($delete_sql);
-    if ($delete_stmt) {
-        $delete_stmt->bind_param("ii", $budget_id, $user_id);
-        if ($delete_stmt->execute()) {
-            $_SESSION['message'] = "Budget entry deleted successfully!";
-        } else {
-            $_SESSION['message'] = "Error deleting entry: " . $delete_stmt->error;
-        }
-        $delete_stmt->close();
-        header("Location: index.php?page=budget");
-        exit();
-    }
-}
+function handleUpdate($conn, $user_id, $data) {
+    $budget_id = intval($data['budget_id']);
+    $category = $conn->real_escape_string($data['category']);
+    $amount = floatval($data['amount']);
+    $month = $conn->real_escape_string($data['month']);
 
-// Handle Update
-if (isset($_POST['update']) && isset($_POST['budget_id'])) {
-    $budget_id = intval($_POST['budget_id']);
-    $category = $conn->real_escape_string($_POST['category']);
-    $amount = isset($_POST['amount']) ? floatval($_POST['amount']) : null;
-    $month = $conn->real_escape_string($_POST['month']);
-
-    $update_sql = "UPDATE Budgets SET category = ?, amount = ?, month = ? WHERE budget_id = ? AND user_id = ?";
-    $update_stmt = $conn->prepare($update_sql);
-    if ($update_stmt) {
-        $update_stmt->bind_param("sdsii", $category, $amount, $month, $budget_id, $user_id);
-        if ($update_stmt->execute()) {
+    $sql = "UPDATE Budgets SET category = ?, amount = ?, month = ? WHERE budget_id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("sdsii", $category, $amount, $month, $budget_id, $user_id);
+        $success = $stmt->execute();
+        $error = $success ? null : $stmt->error;
+        $stmt->close();
+        
+        if ($success) {
             $_SESSION['message'] = "Budget entry updated successfully!";
-        } else {
-            $_SESSION['message'] = "Error updating entry: " . $update_stmt->error;
+            header("Location: index.php?page=budget");
+            exit();
         }
-        $update_stmt->close();
-        header("Location: index.php?page=budget");
-        exit();
+        return $error;
     }
+    return "Failed to prepare statement";
 }
 
-// Pagination settings
-$entries_per_page = 8;
+function handleDelete($conn, $user_id, $budget_id) {
+    $budget_id = intval($budget_id);
+    $sql = "DELETE FROM Budgets WHERE budget_id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("ii", $budget_id, $user_id);
+        $success = $stmt->execute();
+        $error = $success ? null : $stmt->error;
+        $stmt->close();
+        
+        if ($success) {
+            $_SESSION['message'] = "Budget entry deleted successfully!";
+            header("Location: index.php?page=budget");
+            exit();
+        }
+        return $error;
+    }
+    return "Failed to prepare statement";
+}
+
+// Data Fetchers
+function fetchEditData($conn, $user_id, $budget_id) {
+    $sql = "SELECT * FROM Budgets WHERE budget_id = ? AND user_id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("ii", $budget_id, $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $edit_data = $result->fetch_assoc();
+        $stmt->close();
+        return $edit_data;
+    }
+    return null;
+}
+
+function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page) {
+    $offset = ($current_page - 1) * $entries_per_page;
+    $sql = "SELECT * FROM Budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $stmt->close();
+        return $result;
+    }
+    return null;
+}
+
+function calculateTotalBudget($conn, $user_id) {
+    $sql = "SELECT SUM(amount) as total FROM Budgets WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $total = $result->fetch_assoc()['total'] ?? 0;
+        $stmt->close();
+        return $total;
+    }
+    return 0;
+}
+
+function getPaginationData($conn, $user_id, $entries_per_page) {
+    $sql = "SELECT COUNT(*) as count FROM Budgets WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    
+    if ($stmt) {
+        $stmt->bind_param("i", $user_id);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        $total_entries = $result->fetch_assoc()['count'];
+        $stmt->close();
+        return ceil($total_entries / $entries_per_page);
+    }
+    return 0;
+}
+
+function getCategories() {
+    return [
+        'Rent/Accommodation',
+        'Transportation',
+        'Groceries',
+        'Utilities',
+        'Books/Supplies',
+        'Entertainment',
+        'Healthcare',
+        'Food',
+        'Others'
+    ];
+}
+
+// Main Execution
 $current_page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
-$offset = ($current_page - 1) * $entries_per_page;
-
-// Get total number of entries for pagination
-$total_entries_sql = "SELECT COUNT(*) as count FROM Budgets WHERE user_id = ?";
-$total_stmt = $conn->prepare($total_entries_sql);
-if ($total_stmt) {
-    $total_stmt->bind_param("i", $user_id);
-    $total_stmt->execute();
-    $result = $total_stmt->get_result();
-    $total_entries = $result->fetch_assoc()['count'];
-    $total_pages = ceil($total_entries / $entries_per_page);
-    $total_stmt->close();
-}
-
-// Fetch existing budget entries with pagination
-$budgets = array();
-$sql = "SELECT * FROM Budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
-$stmt = $conn->prepare($sql);
-if ($stmt) {
-    $stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        $budgets[] = $row;
-    }
-    $stmt->close();
-}
-
-// Calculate total budget (using all entries, not just paginated ones)
-$total_budget = 0;
-$total_sql = "SELECT SUM(amount) as total FROM Budgets WHERE user_id = ?";
-$total_stmt = $conn->prepare($total_sql);
-if ($total_stmt) {
-    $total_stmt->bind_param("i", $user_id);
-    $total_stmt->execute();
-    $total_result = $total_stmt->get_result();
-    $total_row = $total_result->fetch_assoc();
-    $total_budget = $total_row['total'] ?? 0;
-    $total_stmt->close();
-}
+$error = handleBudgetSubmission($conn, $user_id);
+$edit_data = isset($_GET['edit']) && isset($_GET['budget_id']) ? 
+             fetchEditData($conn, $user_id, $_GET['budget_id']) : null;
+$budgets = fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page);
+$total_budget = calculateTotalBudget($conn, $user_id);
+$total_pages = getPaginationData($conn, $user_id, $entries_per_page);
+$categories = getCategories();
+$message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
+unset($_SESSION['message']);
 ?>
 
+<!-- HTML Template -->
 <div class="row">
     <div class="leftcolumn">
         <div class="main-card">
@@ -165,14 +200,10 @@ if ($total_stmt) {
                 <label for="category">Category:</label><br>
                 <select name="category" id="category" required>
                     <option value="">Select a category</option>
-                    <br>
-                    <?php
-                    $categories = ['Rent/Accommodation', 'Transportation', 'Groceries', 'Utilities', 'Books/Supplies', 'Entertainment', 'Healthcare', 'Food', 'Others'];
-                    foreach ($categories as $cat) {
-                        $selected = ($edit_data && $edit_data['category'] == $cat) ? 'selected' : '';
-                        echo "<option value=\"$cat\" $selected>$cat</option>";
-                    }
-                    ?>
+                    <?php foreach ($categories as $cat): ?>
+                        <?php $selected = ($edit_data && $edit_data['category'] == $cat) ? 'selected' : ''; ?>
+                        <option value="<?php echo $cat; ?>" <?php echo $selected; ?>><?php echo $cat; ?></option>
+                    <?php endforeach; ?>
                 </select><br>
 
                 <label for="amount">Amount (RM):</label><br>
@@ -198,7 +229,7 @@ if ($total_stmt) {
         
         <div class="card">
             <h2>Recent Budget Entries</h2>
-            <?php if (!empty($budgets)): ?>
+            <?php if ($budgets && $budgets->num_rows > 0): ?>
                 <table>
                     <tr>
                         <th>Month</th>
@@ -206,7 +237,7 @@ if ($total_stmt) {
                         <th>Amount (RM)</th>
                         <th>Actions</th>
                     </tr>
-                    <?php foreach ($budgets as $budget): ?>
+                    <?php while ($budget = $budgets->fetch_assoc()): ?>
                     <tr>
                         <td><?php echo htmlspecialchars($budget['month']); ?></td>
                         <td><?php echo htmlspecialchars($budget['category']); ?></td>
@@ -220,7 +251,7 @@ if ($total_stmt) {
                             </form>
                         </td>
                     </tr>
-                    <?php endforeach; ?>
+                    <?php endwhile; ?>
                 </table>
 
                 <!-- Pagination -->
@@ -249,3 +280,5 @@ if ($total_stmt) {
         </div>
     </div>
 </div>
+
+<?php $conn->close(); ?>
