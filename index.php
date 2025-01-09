@@ -51,6 +51,9 @@ function checkName($name)
     <link rel="stylesheet" href="css/dashboard.css">
     <link rel="stylesheet" href="css/budget.css">
     <link rel="stylesheet" href="css/saving.css">
+    <link rel="stylesheet" href="css/expenses.css">
+
+    <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
 
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
