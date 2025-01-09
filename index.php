@@ -37,6 +37,10 @@ function checkName($name)
     }
     return $name;
 }
+
+//get current page
+$current_page = isset($_GET['page']) ? $_GET['page'] : 'default';
+
 ?>
 <!DOCTYPE html>
 <html>
@@ -48,10 +52,26 @@ function checkName($name)
     <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
 
     <link rel="stylesheet" href="css/styles.css">
-    <link rel="stylesheet" href="css/dashboard.css">
-    <link rel="stylesheet" href="css/budget.css">
-    <link rel="stylesheet" href="css/saving.css">
-    <link rel="stylesheet" href="css/expenses.css">
+
+    <?php
+    switch ($current_page) {
+        case 'expenses':
+            echo '<link rel="stylesheet" href="css/expenses.css">';
+            break;
+        case 'budget':
+            echo '<link rel="stylesheet" href="css/budget.css">';
+            break;
+        case 'dashboard':
+            echo '<link rel="stylesheet" href="css/dashboard.css">';
+            break;
+        case 'profile':
+            echo '<link rel="stylesheet" href="css/profile.css">';
+            break;
+        case 'saving':
+            echo '<link rel="stylesheet" href="css/saving.css">';
+            break;
+    }
+    ?>
 
     <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
 
@@ -63,9 +83,10 @@ function checkName($name)
 <body>
     <div class="card">
         <div class="header">
-            <h1> <?php 
-                $icon = checkName($page);
-                echo $icon . ' ' . htmlspecialchars($website_name); 
+            <h1> 
+                <?php
+                    $icon = checkName($page);
+                    echo $icon . ' ' . htmlspecialchars($website_name);
                 ?>
             </h1>
             <p><?php echo htmlspecialchars($website_desc); ?></p>

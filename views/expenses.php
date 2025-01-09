@@ -1,6 +1,6 @@
 <?php
 include('auth/db_config.php');
-$entries_per_page = 8;
+$entries_per_page = 5;
 
 // User authentication check
 if (isset($_SESSION['email'])) {
@@ -19,21 +19,23 @@ if (isset($_SESSION['email'])) {
 }
 
 // Form handling functions
-function handleExpenseSubmission($conn, $user_id) {
+function handleExpenseSubmission($conn, $user_id)
+{
     if ($_SERVER['REQUEST_METHOD'] != 'POST') return null;
-    
+
     if (isset($_POST['delete'])) {
         return handleDelete($conn, $user_id, $_POST['expense_id']);
     }
-    
+
     if (isset($_POST['update'])) {
         return handleUpdate($conn, $user_id, $_POST);
     }
-    
+
     return handleInsert($conn, $user_id, $_POST);
 }
 
-function handleInsert($conn, $user_id, $data) {
+function handleInsert($conn, $user_id, $data)
+{
     $description = $conn->real_escape_string($data['description']);
     $category = $conn->real_escape_string($data['category']);
     $amount = floatval($data['amount']);
@@ -41,13 +43,13 @@ function handleInsert($conn, $user_id, $data) {
 
     $sql = "INSERT INTO expenses (user_id, description, category, amount, date) VALUES (?, ?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("issds", $user_id, $description, $category, $amount, $date);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Expense successfully recorded!";
             header("Location: index.php?page=expenses");
@@ -58,7 +60,8 @@ function handleInsert($conn, $user_id, $data) {
     return "Failed to prepare statement";
 }
 
-function handleUpdate($conn, $user_id, $data) {
+function handleUpdate($conn, $user_id, $data)
+{
     $expense_id = intval($data['expense_id']);
     $description = $conn->real_escape_string($data['description']);
     $category = $conn->real_escape_string($data['category']);
@@ -68,13 +71,13 @@ function handleUpdate($conn, $user_id, $data) {
     $sql = "UPDATE expenses SET description = ?, category = ?, amount = ?, date = ? 
             WHERE expense_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("ssdsis", $description, $category, $amount, $date, $expense_id, $user_id);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Expense updated successfully!";
             header("Location: index.php?page=expenses");
@@ -85,17 +88,18 @@ function handleUpdate($conn, $user_id, $data) {
     return "Failed to prepare statement";
 }
 
-function handleDelete($conn, $user_id, $expense_id) {
+function handleDelete($conn, $user_id, $expense_id)
+{
     $expense_id = intval($expense_id);
     $sql = "DELETE FROM expenses WHERE expense_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("ii", $expense_id, $user_id);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Expense deleted successfully!";
             header("Location: index.php?page=expenses");
@@ -107,7 +111,8 @@ function handleDelete($conn, $user_id, $expense_id) {
 }
 
 // Fetch expense for editing
-function fetchExpenseForEdit($conn, $user_id, $expense_id) {
+function fetchExpenseForEdit($conn, $user_id, $expense_id)
+{
     $sql = "SELECT * FROM expenses WHERE expense_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
     if ($stmt) {
@@ -122,7 +127,8 @@ function fetchExpenseForEdit($conn, $user_id, $expense_id) {
 }
 
 // Get categories function
-function getCategories() {
+function getCategories()
+{
     return [
         'Food & Dining',
         'Transportation',
@@ -156,6 +162,14 @@ $stmt->execute();
 $monthly_total = $stmt->get_result()->fetch_assoc()['monthly_total'] ?? 0;
 $stmt->close();
 
+// calculate total expenses
+$sql = "SELECT SUM(amount) as total FROM expenses WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$total_expenses = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
+$stmt->close();
+
 // Fetch recent expenses
 $offset = ($current_page - 1) * $entries_per_page;
 $sql = "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC LIMIT ? OFFSET ?";
@@ -164,6 +178,18 @@ $stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
 $stmt->execute();
 $expenses = $stmt->get_result();
 $stmt->close();
+
+// Get total number of expenses for pagination
+$sql = "SELECT COUNT(*) as total FROM expenses WHERE user_id = ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$total_records = $stmt->get_result()->fetch_assoc()['total'];
+$stmt->close();
+
+$total_pages = ceil($total_records / $entries_per_page);
+$current_page = isset($_GET['p']) ? max(1, min($total_pages, intval($_GET['p']))) : 1;
+$offset = ($current_page - 1) * $entries_per_page;
 
 $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 unset($_SESSION['message']);
@@ -179,8 +205,8 @@ unset($_SESSION['message']);
                     <?php echo $message; ?>
                 </div>
             <?php endif; ?>
-            
-            <form id="expenseForm" action="index.php?page=expenses<?php echo $edit_data ? '&edit=1&expense_id='.$edit_data['expense_id'] : ''; ?>" method="POST">
+
+            <form id="expenseForm" action="index.php?page=expenses<?php echo $edit_data ? '&edit=1&expense_id=' . $edit_data['expense_id'] : ''; ?>" method="POST">
                 <?php if ($edit_data): ?>
                     <input type="hidden" name="expense_id" value="<?php echo $edit_data['expense_id']; ?>">
                     <input type="hidden" name="update" value="1">
@@ -188,8 +214,8 @@ unset($_SESSION['message']);
 
                 <div class="form-group">
                     <label for="description">Description</label>
-                    <input type="text" id="description" name="description" 
-                           value="<?php echo $edit_data ? htmlspecialchars($edit_data['description']) : ''; ?>" required>
+                    <input type="text" id="description" name="description"
+                        value="<?php echo $edit_data ? htmlspecialchars($edit_data['description']) : ''; ?>" required>
                 </div>
 
                 <div class="form-group">
@@ -197,7 +223,7 @@ unset($_SESSION['message']);
                     <select id="category" name="category" required>
                         <option value="">Select a category</option>
                         <?php foreach ($categories as $cat): ?>
-                            <option value="<?php echo $cat; ?>" 
+                            <option value="<?php echo $cat; ?>"
                                 <?php echo ($edit_data && $edit_data['category'] == $cat) ? 'selected' : ''; ?>>
                                 <?php echo $cat; ?>
                             </option>
@@ -208,14 +234,14 @@ unset($_SESSION['message']);
                 <div class="form-row">
                     <div class="form-group">
                         <label for="amount">Amount (RM)</label>
-                        <input type="number" id="amount" name="amount" step="0.01" 
-                               value="<?php echo $edit_data ? $edit_data['amount'] : ''; ?>" required>
+                        <input type="number" id="amount" name="amount" step="0.01"
+                            value="<?php echo $edit_data ? $edit_data['amount'] : ''; ?>" required>
                     </div>
 
                     <div class="form-group">
                         <label for="date">Date</label>
-                        <input type="date" id="date" name="date" 
-                               value="<?php echo $edit_data ? $edit_data['date'] : ''; ?>" required>
+                        <input type="date" id="date" name="date"
+                            value="<?php echo $edit_data ? $edit_data['date'] : ''; ?>" required>
                     </div>
                 </div>
 
@@ -241,8 +267,14 @@ unset($_SESSION['message']);
                     <span class="amount">RM <?php echo number_format($monthly_total, 2); ?></span>
                 </div>
             </div>
+            <div class="summary-content">
+                <div class="summary-item">
+                    <span class="label">Total Expenses</span>
+                    <span class="amount">RM <?php echo number_format($total_expenses, 2); ?> </span>
+                </div>
+            </div>
         </div>
-        
+
         <div class="card expense-list-card" id="expenseList">
             <h2>Recent Expenses</h2>
             <?php if ($expenses && $expenses->num_rows > 0): ?>
@@ -269,10 +301,10 @@ unset($_SESSION['message']);
                                     </td>
                                     <td class="amount-cell">RM <?php echo number_format($expense['amount'], 2); ?></td>
                                     <td class="actions-cell">
-                                        <a href="index.php?page=expenses&edit=1&expense_id=<?php echo $expense['expense_id']; ?>" 
-                                           class="action-btn edit-btn">Edit</a>
-                                        <form method="POST" style="display: inline;" 
-                                              onsubmit="return confirm('Are you sure you want to delete this expense?');">
+                                        <a href="index.php?page=expenses&edit=1&expense_id=<?php echo $expense['expense_id']; ?>"
+                                            class="action-btn edit-btn">Edit</a>
+                                        <form method="POST" style="display: inline;"
+                                            onsubmit="return confirm('Are you sure you want to delete this expense?');">
                                             <input type="hidden" name="expense_id" value="<?php echo $expense['expense_id']; ?>">
                                             <input type="hidden" name="delete" value="1">
                                             <button type="submit" class="action-btn delete-btn">Delete</button>
@@ -283,6 +315,44 @@ unset($_SESSION['message']);
                         </tbody>
                     </table>
                 </div>
+                <!-- Pagination -->
+                <?php if ($total_pages > 1): ?>
+                    <div class="pagination">
+                        <?php if ($current_page > 1): ?>
+                            <a href="index.php?page=expenses&p=<?php echo ($current_page - 1); ?>" class="pagination-btn">&laquo; Previous</a>
+                        <?php endif; ?>
+
+                        <div class="pagination-numbers">
+                            <?php
+                            $start_page = max(1, $current_page - 2);
+                            $end_page = min($total_pages, $current_page + 2);
+
+                            if ($start_page > 1) {
+                                echo '<a href="index.php?page=expenses&p=1" class="pagination-btn">1</a>';
+                                if ($start_page > 2) {
+                                    echo '<span class="pagination-ellipsis">...</span>';
+                                }
+                            }
+
+                            for ($i = $start_page; $i <= $end_page; $i++) {
+                                $active_class = ($i == $current_page) ? ' active' : '';
+                                echo '<a href="index.php?page=expenses&p=' . $i . '" class="pagination-btn' . $active_class . '">' . $i . '</a>';
+                            }
+
+                            if ($end_page < $total_pages) {
+                                if ($end_page < $total_pages - 1) {
+                                    echo '<span class="pagination-ellipsis">...</span>';
+                                }
+                                echo '<a href="index.php?page=expenses&p=' . $total_pages . '" class="pagination-btn">' . $total_pages . '</a>';
+                            }
+                            ?>
+                        </div>
+
+                        <?php if ($current_page < $total_pages): ?>
+                            <a href="index.php?page=expenses&p=<?php echo ($current_page + 1); ?>" class="pagination-btn">Next &raquo;</a>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
             <?php else: ?>
                 <p class="no-data">No expenses recorded yet.</p>
             <?php endif; ?>
