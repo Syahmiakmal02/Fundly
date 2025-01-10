@@ -1,5 +1,11 @@
 <?php
 session_start();
+// Check if user is visiting for the first time or not logged in
+if (!isset($_GET['page']) && (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true)) {
+    include 'views/landingPage.php';
+    exit();
+}
+
 include 'layouts/header.php';
 include 'auth/db_config.php';
 // Add this after session_start()
@@ -85,10 +91,10 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'default';
 <body>
     <div class="card">
         <div class="header">
-            <h1> 
+            <h1>
                 <?php
-                    $icon = checkName($page);
-                    echo $icon . ' ' . htmlspecialchars($website_name);
+                $icon = checkName($page);
+                echo $icon . ' ' . $website_name;
                 ?>
             </h1>
             <p><?php echo htmlspecialchars($website_desc); ?></p>
