@@ -8,14 +8,21 @@ if (!isset($_SESSION['email'])) {
     exit();
 }
 
-// Get user ID
-$stmt = $conn->prepare("SELECT user_id FROM users WHERE email = ?");
-$stmt->bind_param("s", $_SESSION['email']);
-$stmt->execute();
-$result = $stmt->get_result();
-$user = $result->fetch_assoc();
-$user_id = $user['user_id'];
-$stmt->close();
+// User authentication check
+if (isset($_SESSION['email'])) {
+    $email = $_SESSION['email'];
+    $sql = "SELECT user_id FROM users WHERE email = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->bind_result($user_id);
+    $stmt->fetch();
+    $stmt->close();
+} else {
+    $_SESSION['error'] = "User not logged in!";
+    header("Location: ../auth/login.php");
+    exit();
+}
 
 // Get budget data
 $sql = "SELECT category, SUM(amount) as total 

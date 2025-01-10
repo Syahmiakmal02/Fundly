@@ -53,6 +53,8 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'default';
 
     <link rel="stylesheet" href="css/styles.css">
 
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <?php
     switch ($current_page) {
         case 'expenses':
