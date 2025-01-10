@@ -1,7 +1,10 @@
+<head>
+    <link rel="stylesheet" type="text/css" href="../css/budget.css">
+</head>
 <?php
 // Config and Initialization
 include('auth/db_config.php');
-$entries_per_page = 8;
+$entries_per_page = 5;
 
 // Fetch user ID from database based on session email
 if (isset($_SESSION['email'])) {
@@ -193,105 +196,142 @@ $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 unset($_SESSION['message']);
 ?>
 
-<!-- HTML Template -->
-<div class="row">
-    <div class="leftcolumn">
-        <div class="main-card">
-            <h2><?php echo $edit_data ? 'Edit Budget Entry' : 'New Budget Entry'; ?></h2>
+<div class="dashboard-container">
+    <!-- Left Column - Budget Form -->
+    <div class="budget-form-section">
+        <div class="card budget-form-card">
+            <h2><?php echo $edit_data ? 'Edit Budget Entry' : 'Add New Budget Entry'; ?></h2>
             <?php if (!empty($message)): ?>
-                <p class="message <?php echo strpos($message, 'successfully') !== false ? 'success' : 'error'; ?>">
+                <div class="message <?php echo strpos($message, 'successfully') !== false ? 'success' : 'error'; ?>">
                     <?php echo $message; ?>
-                </p>
+                </div>
             <?php endif; ?>
-            
-            <form action="index.php?page=budget<?php echo $edit_data ? '&edit=1&budget_id='.$edit_data['budget_id'] : ''; ?>" 
-                  method="POST" 
-                  id="budgetForm">
-                
+
+            <form id="budgetForm" action="index.php?page=budget<?php echo $edit_data ? '&edit=1&budget_id=' . $edit_data['budget_id'] : ''; ?>" method="POST">
                 <?php if ($edit_data): ?>
                     <input type="hidden" name="budget_id" value="<?php echo $edit_data['budget_id']; ?>">
                     <input type="hidden" name="update" value="1">
                 <?php endif; ?>
 
-                <label for="category">Category:</label><br>
-                <select name="category" id="category" required>
-                    <option value="">Select a category</option>
-                    <?php foreach ($categories as $cat): ?>
-                        <?php $selected = ($edit_data && $edit_data['category'] == $cat) ? 'selected' : ''; ?>
-                        <option value="<?php echo $cat; ?>" <?php echo $selected; ?>><?php echo $cat; ?></option>
-                    <?php endforeach; ?>
-                </select><br>
+                <div class="form-group">
+                    <label for="category">Category</label>
+                    <select name="category" id="category" required>
+                        <option value="">Select a category</option>
+                        <?php foreach ($categories as $cat): ?>
+                            <option value="<?php echo $cat; ?>" <?php echo ($edit_data && $edit_data['category'] == $cat) ? 'selected' : ''; ?>>
+                                <?php echo $cat; ?>
+                            </option>
+                        <?php endforeach; ?>
+                    </select>
+                </div>
 
-                <label for="amount">Amount (RM):</label><br>
-                <input type="number" name="amount" id="amount" step="0.01" required
-                       value="<?php echo $edit_data ? $edit_data['amount'] : ''; ?>"><br>
+                <div class="form-group">
+                    <label for="amount">Amount (RM)</label>
+                    <input type="number" name="amount" id="amount" step="0.01" value="<?php echo $edit_data ? $edit_data['amount'] : ''; ?>" required>
+                </div>
 
-                <label for="month">Month:</label><br>
-                <input type="month" name="month" id="month" required 
-                       value="<?php echo $edit_data ? $edit_data['month'] : ''; ?>"><br>
+                <div class="form-group">
+                    <label for="month">Month</label>
+                    <input type="month" name="month" id="month" value="<?php echo $edit_data ? $edit_data['month'] : ''; ?>" required>
+                </div>
 
-                <input type="submit" value="<?php echo $edit_data ? 'Update Budget Entry' : 'Save Budget Entry'; ?>">
-                <?php if ($edit_data): ?>
-                    <a href="index.php?page=budget" class="button">Cancel Edit</a>
-                <?php endif; ?>
+                <div class="form-actions">
+                    <button type="submit" class="submit-btn"><?php echo $edit_data ? 'Update Budget Entry' : 'Save Budget Entry'; ?></button>
+                    <?php if ($edit_data): ?>
+                        <a href="index.php?page=budget" class="cancel-btn">Cancel</a>
+                    <?php endif; ?>
+                </div>
             </form>
         </div>
     </div>
-    <div class="rightcolumn" id="budget-rightcolumn">
-        <div class="card" id="budget-summary">
-            <h2>Budget Summary</h2>
-            <p>Total Budget: RM <?php echo number_format($total_budget, 2); ?></p>
+
+    <!-- Right Column - Budget List -->
+    <div class="budget-list-section">
+        <div class="card summary-card">
+            <h3>Budget Summary</h3>
+            <div class="summary-item">
+                <span class="label">Total Budget</span>
+                <span class="amount">RM <?php echo number_format($total_budget, 2); ?></span>
+            </div>
         </div>
-        
-        <div class="card">
+
+        <div class="card budget-list-card">
             <h2>Recent Budget Entries</h2>
             <?php if ($budgets && $budgets->num_rows > 0): ?>
-                <table>
-                    <tr>
-                        <th>Month</th>
-                        <th>Category</th>
-                        <th>Amount (RM)</th>
-                        <th>Actions</th>
-                    </tr>
-                    <?php while ($budget = $budgets->fetch_assoc()): ?>
-                    <tr>
-                        <td><?php echo htmlspecialchars($budget['month']); ?></td>
-                        <td><?php echo htmlspecialchars($budget['category']); ?></td>
-                        <td><?php echo number_format($budget['amount'], 2); ?></td>
-                        <td>
-                            <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="edit-link">Edit</a>
-                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
-                                <input type="hidden" name="delete" value="1">
-                                <button type="submit" class="delete-button">Delete</button>
-                            </form>
-                        </td>
-                    </tr>
-                    <?php endwhile; ?>
-                </table>
+                <div class="budget-table-wrapper">
+                    <table class="budget-table">
+                        <thead>
+                            <tr>
+                                <th>Month</th>
+                                <th>Category</th>
+                                <th>Amount (RM)</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php while ($budget = $budgets->fetch_assoc()): ?>
+                                <tr>
+                                    <td><?php echo htmlspecialchars($budget['month']); ?></td>
+                                    <td>
+                                        <span class="category-badge">
+                                            <?php echo htmlspecialchars($budget['category']); ?>
+                                        </span>
+                                    </td>
+                                    <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
+                                    <td>
+                                        <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                            <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
+                                            <input type="hidden" name="delete" value="1">
+                                            <button type="submit" class="action-btn delete-btn">Delete</button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            <?php endwhile; ?>
+                        </tbody>
+                    </table>
+                </div>
 
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
-                <div class="pagination">
-                    <?php if ($current_page > 1): ?>
-                        <a href="index.php?page=budget&p=<?php echo ($current_page - 1); ?>" class="pagination-link">&laquo; Previous</a>
-                    <?php endif; ?>
-                    
-                    <?php for ($i = 1; $i <= $total_pages; $i++): ?>
-                        <?php if ($i == $current_page): ?>
-                            <span class="pagination-link active"><?php echo $i; ?></span>
-                        <?php else: ?>
-                            <a href="index.php?page=budget&p=<?php echo $i; ?>" class="pagination-link"><?php echo $i; ?></a>
+                    <div class="pagination">
+                        <?php if ($current_page > 1): ?>
+                            <a href="index.php?page=budget&p=<?php echo ($current_page - 1); ?>" class="pagination-btn">&laquo; Previous</a>
                         <?php endif; ?>
-                    <?php endfor; ?>
-                    
-                    <?php if ($current_page < $total_pages): ?>
-                        <a href="index.php?page=budget&p=<?php echo ($current_page + 1); ?>" class="pagination-link">Next &raquo;</a>
-                    <?php endif; ?>
-                </div>
+
+                        <div class="pagination-numbers">
+                            <?php
+                            $start_page = max(1, $current_page - 2);
+                            $end_page = min($total_pages, $current_page + 2);
+
+                            if ($start_page > 1) {
+                                echo '<a href="index.php?page=budget&p=1" class="pagination-btn">1</a>';
+                                if ($start_page > 2) {
+                                    echo '<span class="pagination-ellipsis">...</span>';
+                                }
+                            }
+
+                            for ($i = $start_page; $i <= $end_page; $i++) {
+                                $active_class = ($i == $current_page) ? ' active' : '';
+                                echo '<a href="index.php?page=budget&p=' . $i . '" class="pagination-btn' . $active_class . '">' . $i . '</a>';
+                            }
+
+                            if ($end_page < $total_pages) {
+                                if ($end_page < $total_pages - 1) {
+                                    echo '<span class="pagination-ellipsis">...</span>';
+                                }
+                                echo '<a href="index.php?page=budget&p=' . $total_pages . '" class="pagination-btn">' . $total_pages . '</a>';
+                            }
+                            ?>
+                        </div>
+
+                        <?php if ($current_page < $total_pages): ?>
+                            <a href="index.php?page=budget&p=<?php echo ($current_page + 1); ?>" class="pagination-btn">Next &raquo;</a>
+                        <?php endif; ?>
+                    </div>
                 <?php endif; ?>
             <?php else: ?>
-                <p>No budget entries found.</p>
+                <p class="no-data">No budget entries found.</p>
             <?php endif; ?>
         </div>
     </div>
