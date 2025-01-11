@@ -132,6 +132,23 @@ input:focus, select:focus {
     outline: none; /* Removes the outline */
 }
 
+/*The filter button of the rightest of the table header so it loks nice*/
+.filter-btn {
+    float: right;
+    padding: 0.5rem 1rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.filter-btn:hover {
+    background-color: #e5e7eb;
+}
+
 /* Adding border radius to the corners of the table */
 .budget-table th:first-child {
     border-top-left-radius: 8px; /* Top-left corner */

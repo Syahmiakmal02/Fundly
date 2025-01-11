@@ -1,6 +1,3 @@
-<head>
-    <link rel="stylesheet" type="text/css" href="../css/budget.css">
-</head>
 <?php
 // Config and Initialization
 include('auth/db_config.php');
@@ -260,35 +257,34 @@ unset($_SESSION['message']);
             <?php if ($budgets && $budgets->num_rows > 0): ?>
                 <div class="budget-table-wrapper">
                     <table class="budget-table">
-                        <thead>
-                            <tr>
-                                <th>Month</th>
-                                <th>Category</th>
-                                <th>Amount (RM)</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php while ($budget = $budgets->fetch_assoc()): ?>
                                 <tr>
-                                    <td><?php echo htmlspecialchars($budget['month']); ?></td>
-                                    <td>
-                                        <span class="category-badge">
-                                            <?php echo htmlspecialchars($budget['category']); ?>
-                                        </span>
-                                    </td>
-                                    <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
-                                    <td>
-                                        <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                            <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
-                                            <input type="hidden" name="delete" value="1">
-                                            <button type="submit" class="action-btn delete-btn">Delete</button>
-                                        </form>
-                                    </td>
+                                <th>Month <button class="filter-btn" onclick="filterTable('month')"><i class="fas fa-filter"></i></button></th>
+                                <th>Category <button class="filter-btn" onclick="filterTable('category')"><i class="fas fa-filter"></i></button></th>
+                                <th>Amount <button class="filter-btn" onclick="filterTable('amount')"><i class="fas fa-filter"></i></button></th>
+                                <th>Actions</th>
                                 </tr>
-                            <?php endwhile; ?>
-                        </tbody>
+                            </thead>
+                            <tbody id="budgetTable">
+                                <?php while ($budget = $budgets->fetch_assoc()): ?>
+                                    <tr>
+                                        <td><?php echo htmlspecialchars($budget['month']); ?></td>
+                                        <td>
+                                            <span class="category-badge">
+                                                <?php echo htmlspecialchars($budget['category']); ?>
+                                            </span>
+                                        </td>
+                                        <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
+                                        <td>
+                                            <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                                <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
+                                                <input type="hidden" name="delete" value="1">
+                                                <button type="submit" class="action-btn delete-btn">Delete</button>
+                                            </form>
+                                        </td>
+                                    </tr>
+                                <?php endwhile; ?>
+                            </tbody>
                     </table>
                 </div>
 
@@ -336,5 +332,70 @@ unset($_SESSION['message']);
         </div>
     </div>
 </div>
+<script>
+let sortDirections = {
+    month: 'asc',
+    category: 'asc',
+    amount: 'asc'
+};
+
+function filterTable(column) {
+    var table, rows, switching, i, x, y, shouldSwitch;
+    table = document.getElementById("budgetTable");
+    switching = true;
+    let direction = sortDirections[column];
+
+    while (switching) {
+        switching = false;
+        rows = table.rows;
+        for (i = 0; i < (rows.length - 1); i++) {
+            shouldSwitch = false;
+            x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
+            y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
+            if (direction === 'asc') {
+                if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
+                    shouldSwitch = true;
+                    break;
+                }
+            } else {
+                if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
+                    shouldSwitch = true;
+                    break;
+                }
+            }
+        }
+        if (shouldSwitch) {
+            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+            switching = true;
+        }
+    }
+
+    // Toggle the direction for the next click
+    sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
+}
+
+function getColumnIndex(column) {
+    switch (column) {
+        case 'month':
+            return 0;
+        case 'category':
+            return 1;
+        case 'amount':
+            return 2;
+        default:
+            return 0;
+    }
+}
+
+function compareValues(a, b, column) {
+    if (column === 'amount') {
+        return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
+    } else if (column === 'month') {
+        return new Date(a) - new Date(b);
+    } else {
+        return a.localeCompare(b);
+    }
+}
+</script>
 
 <?php $conn->close(); ?>
