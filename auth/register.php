@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     // Insert new user with default role as 'admin'
-    $sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'student')";
+    $sql = "INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, 'admin')";
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {

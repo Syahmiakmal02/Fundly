@@ -45,7 +45,7 @@ function checkName($name)
 }
 
 //get current page
-$current_page = isset($_GET['page']) ? $_GET['page'] : 'default';
+$current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
 
 ?>
 <!DOCTYPE html>
@@ -63,14 +63,15 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'default';
 
     <?php
     switch ($current_page) {
-        case 'expenses':
-            echo '<link rel="stylesheet" href="css/expenses.css">';
+        case 'dashboard':
+        default:
+            echo '<link rel="stylesheet" href="css/dashboard.css">';
             break;
         case 'budget':
             echo '<link rel="stylesheet" href="css/budget.css">';
             break;
-        case 'dashboard':
-            echo '<link rel="stylesheet" href="css/dashboard.css">';
+        case 'expenses':
+            echo '<link rel="stylesheet" href="css/expenses.css">';
             break;
         case 'profile':
             echo '<link rel="stylesheet" href="css/profile.css">';

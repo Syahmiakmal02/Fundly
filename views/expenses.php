@@ -126,6 +126,50 @@ function fetchExpenseForEdit($conn, $user_id, $expense_id)
     return null;
 }
 
+// Modified function to fetch expenses with search
+function fetchExpenses($conn, $user_id, $search = '', $limit, $offset)
+{
+    $search = '%' . $search . '%';
+    $sql = "SELECT * FROM expenses 
+            WHERE user_id = ? 
+            AND (description LIKE ? 
+                OR category LIKE ? 
+                OR CAST(amount AS CHAR) LIKE ? 
+                OR DATE_FORMAT(date, '%d %M %Y') LIKE ?)
+            ORDER BY date DESC 
+            LIMIT ? OFFSET ?";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("issssii", $user_id, $search, $search, $search, $search, $limit, $offset);
+        $stmt->execute();
+        return $stmt->get_result();
+    }
+    return null;
+}
+
+// Modified function to get total records with search
+function getTotalRecords($conn, $user_id, $search = '')
+{
+    $search = '%' . $search . '%';
+    $sql = "SELECT COUNT(*) as total 
+            FROM expenses 
+            WHERE user_id = ? 
+            AND (description LIKE ? 
+                OR category LIKE ? 
+                OR CAST(amount AS CHAR) LIKE ? 
+                OR DATE_FORMAT(date, '%d %M %Y') LIKE ?)";
+
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("issss", $user_id, $search, $search, $search, $search);
+        $stmt->execute();
+        $result = $stmt->get_result()->fetch_assoc();
+        return $result['total'];
+    }
+    return 0;
+}
+
 // Get categories function
 function getCategories()
 {
@@ -153,6 +197,9 @@ if (isset($_GET['edit']) && isset($_GET['expense_id'])) {
     $edit_data = fetchExpenseForEdit($conn, $user_id, intval($_GET['expense_id']));
 }
 
+// Get search term
+$search_term = isset($_GET['search']) ? trim($_GET['search']) : '';
+
 // Calculate monthly total
 $month = date('Y-m');
 $sql = "SELECT SUM(amount) as monthly_total FROM expenses WHERE user_id = ? AND DATE_FORMAT(date, '%Y-%m') = ?";
@@ -170,26 +217,14 @@ $stmt->execute();
 $total_expenses = $stmt->get_result()->fetch_assoc()['total'] ?? 0;
 $stmt->close();
 
-// Fetch recent expenses
-$offset = ($current_page - 1) * $entries_per_page;
-$sql = "SELECT * FROM expenses WHERE user_id = ? ORDER BY date DESC LIMIT ? OFFSET ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
-$stmt->execute();
-$expenses = $stmt->get_result();
-$stmt->close();
-
-// Get total number of expenses for pagination
-$sql = "SELECT COUNT(*) as total FROM expenses WHERE user_id = ?";
-$stmt = $conn->prepare($sql);
-$stmt->bind_param("i", $user_id);
-$stmt->execute();
-$total_records = $stmt->get_result()->fetch_assoc()['total'];
-$stmt->close();
-
+// Get total records with search
+$total_records = getTotalRecords($conn, $user_id, $search_term);
 $total_pages = ceil($total_records / $entries_per_page);
 $current_page = isset($_GET['p']) ? max(1, min($total_pages, intval($_GET['p']))) : 1;
 $offset = ($current_page - 1) * $entries_per_page;
+
+// Fetch expenses with search
+$expenses = fetchExpenses($conn, $user_id, $search_term, $entries_per_page, $offset);
 
 $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 unset($_SESSION['message']);
@@ -269,7 +304,7 @@ unset($_SESSION['message']);
             </div>
             <div class="summary-content">
                 <div class="summary-item">
-                    <span class="label">Total Expenses</span>
+                    <span class="label">Overall Total Expenses</span>
                     <span class="amount">RM <?php echo number_format($total_expenses, 2); ?> </span>
                 </div>
             </div>
@@ -277,11 +312,25 @@ unset($_SESSION['message']);
 
         <div class="card expense-list-card" id="expenseList">
             <h2>Recent Expenses</h2>
+            <form method="GET" action="index.php" class="search-form">
+                <input type="hidden" name="page" value="expenses">
+                <div class="search-container">
+                    <input type="text" name="search"
+                        placeholder="Search by description, category, amount, or date..."
+                        value="<?php echo htmlspecialchars($search_term); ?>"
+                        class="search-input">
+                    <button type="submit" class="search-btn">Search</button>
+                    <a href="index.php?page=expenses" class="clear-search">Clear</a>
+
+                </div>
+            </form>
+
             <?php if ($expenses && $expenses->num_rows > 0): ?>
                 <div class="expense-table-wrapper">
                     <table class="expense-table">
                         <thead>
                             <tr>
+                                <th>No</th>
                                 <th>Date</th>
                                 <th>Description</th>
                                 <th>Category</th>
@@ -290,8 +339,11 @@ unset($_SESSION['message']);
                             </tr>
                         </thead>
                         <tbody>
-                            <?php while ($expense = $expenses->fetch_assoc()): ?>
+                            <?php
+                            $counter = 1;
+                            while ($expense = $expenses->fetch_assoc()): ?>
                                 <tr>
+                                    <td><?php echo $counter++; ?></td>
                                     <td><?php echo date('d M Y', strtotime($expense['date'])); ?></td>
                                     <td><?php echo htmlspecialchars($expense['description']); ?></td>
                                     <td>
@@ -314,12 +366,18 @@ unset($_SESSION['message']);
                             <?php endwhile; ?>
                         </tbody>
                     </table>
+                    <?php if (!empty($search_term)): ?>
+                        <div class="search-results-summary">
+                            Found <?php echo $total_records; ?> result<?php echo $total_records != 1 ? 's' : ''; ?>
+                            for "<?php echo htmlspecialchars($search_term); ?>"
+                        </div>
+                    <?php endif; ?>
                 </div>
                 <!-- Pagination -->
                 <?php if ($total_pages > 1): ?>
                     <div class="pagination">
                         <?php if ($current_page > 1): ?>
-                            <a href="index.php?page=expenses&p=<?php echo ($current_page - 1); ?>" class="pagination-btn">&laquo; Previous</a>
+                            <a href="index.php?page=expenses&p=<?php echo ($current_page - 1); ?><?php echo !empty($search_term) ? '&search=' . urlencode($search_term) : ''; ?>" class="pagination-btn">&laquo; Previous</a>
                         <?php endif; ?>
 
                         <div class="pagination-numbers">
@@ -328,7 +386,7 @@ unset($_SESSION['message']);
                             $end_page = min($total_pages, $current_page + 2);
 
                             if ($start_page > 1) {
-                                echo '<a href="index.php?page=expenses&p=1" class="pagination-btn">1</a>';
+                                echo '<a href="index.php?page=expenses&p=1' . (!empty($search_term) ? '&search=' . urlencode($search_term) : '') . '" class="pagination-btn">1</a>';
                                 if ($start_page > 2) {
                                     echo '<span class="pagination-ellipsis">...</span>';
                                 }
@@ -336,20 +394,20 @@ unset($_SESSION['message']);
 
                             for ($i = $start_page; $i <= $end_page; $i++) {
                                 $active_class = ($i == $current_page) ? ' active' : '';
-                                echo '<a href="index.php?page=expenses&p=' . $i . '" class="pagination-btn' . $active_class . '">' . $i . '</a>';
+                                echo '<a href="index.php?page=expenses&p=' . $i . (!empty($search_term) ? '&search=' . urlencode($search_term) : '') . '" class="pagination-btn' . $active_class . '">' . $i . '</a>';
                             }
 
                             if ($end_page < $total_pages) {
                                 if ($end_page < $total_pages - 1) {
                                     echo '<span class="pagination-ellipsis">...</span>';
                                 }
-                                echo '<a href="index.php?page=expenses&p=' . $total_pages . '" class="pagination-btn">' . $total_pages . '</a>';
+                                echo '<a href="index.php?page=expenses&p=' . $total_pages . (!empty($search_term) ? '&search=' . urlencode($search_term) : '') . '" class="pagination-btn">' . $total_pages . '</a>';
                             }
                             ?>
                         </div>
 
                         <?php if ($current_page < $total_pages): ?>
-                            <a href="index.php?page=expenses&p=<?php echo ($current_page + 1); ?>" class="pagination-btn">Next &raquo;</a>
+                            <a href="index.php?page=expenses&p=<?php echo ($current_page + 1); ?><?php echo !empty($search_term) ? '&search=' . urlencode($search_term) : ''; ?>" class="pagination-btn">Next &raquo;</a>
                         <?php endif; ?>
                     </div>
                 <?php endif; ?>

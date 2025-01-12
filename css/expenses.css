@@ -61,7 +61,7 @@ input:focus, select:focus {
 .submit-btn {
     width: 100%;
     padding: 0.75rem;
-    background-color: #3b82f6;
+    background-color:  #f87171;
     color: white;
     border: none;
     border-radius: 8px;
@@ -71,12 +71,12 @@ input:focus, select:focus {
 }
 
 .submit-btn:hover {
-    background-color: #2563eb;
+    background-color: #ef4444;
 }
 
 /* Summary Card */
 .dashboard-container .summary-card {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #f87171 0%, #ef4444 100%); /* Red gradient */
     color: white;
     box-shadow: none; /* Override the shadow from .card */
     border-radius: 12px; /* Retain if needed */
@@ -162,7 +162,7 @@ input:focus, select:focus {
 .category-badge {
     display: inline-block;
     padding: 0.25rem 0.75rem;
-    background-color: #a3bdf1;
+    /* background-color: #a3bdf1; */
     border-radius: 9999px;
     font-size: 0.875rem;
     color: #374151;
@@ -184,13 +184,17 @@ input:focus, select:focus {
 }
 
 .edit-btn {
-    background-color: #f3f4f6;
-    color: #374151;
+    background-color: #fef3c7; /* Soft yellow background */
+    color: #374151; /* Dark text color */
     margin-right: 0.5rem;
+    border: none; /* Remove default border */
+    padding: 0.5rem 1rem; /* Add some padding */
+    border-radius: 4px; /* Rounded corners */
+    cursor: pointer; /* Pointer cursor on hover */
 }
 
 .edit-btn:hover {
-    background-color: #e5e7eb;
+    background-color: #fde68a; /* Slightly darker yellow on hover */
 }
 
 .delete-btn {
@@ -332,14 +336,94 @@ input:focus, select:focus {
 }
 
 .pagination-btn.active {
-    background-color: #3b82f6;
+    background-color: #f87171;
     color: white;
-    border-color: #3b82f6;
+    border-color: #f87171;
 }
 
 .pagination-ellipsis {
     padding: 0.5rem;
     color: #6b7280;
+}
+
+/* Search Form Styles */
+.search-form {
+    margin-bottom: 1.5rem;
+}
+
+.search-container {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+}
+
+.search-input {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #e5e7eb;
+    border-radius: 8px;
+    background-color: #f9fafb;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.search-input:focus {
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    outline: none;
+}
+
+.search-btn {
+    padding: 0.75rem 1.5rem;
+    background-color: #f87171;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.search-btn:hover {
+    background-color: #ef4444;
+}
+
+.clear-search {
+    padding: 0.75rem 1.5rem;
+    background-color: #f3f4f6;
+    color: #374151;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    transition: background-color 0.2s;
+    white-space: nowrap;
+}
+
+.clear-search:hover {
+    background-color: #e5e7eb;
+}
+
+.search-results-summary {
+    margin: 1rem 0;
+    padding: 0.75rem;
+    background-color: #f3f4f6;
+    border-radius: 8px;
+    color: #374151;
+    font-size: 0.875rem;
+}
+
+/* Responsive search styles */
+@media (max-width: 640px) {
+    .search-container {
+        flex-direction: column;
+    }
+    
+    .search-btn,
+    .clear-search {
+        width: 100%;
+        text-align: center;
+    }
 }
 
 @media (max-width: 640px) {
