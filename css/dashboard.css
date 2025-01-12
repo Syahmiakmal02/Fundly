@@ -1,84 +1,121 @@
+/* Dashboard layout */
 .dashboard {
-    padding: 1.5rem;
-    max-width: 50%; /* Reduced max-width */
-    display: flex;
-    flex-direction: column; /* Stack elements vertically */
-    gap: 20px;
+    max-width: 100%;
+    margin: 20px auto;
+    padding: 0 15px;
 }
 
+.cards {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+}
+
+/* Chart card styles */
 .chart-card {
+    flex: 1;
+    max-width: 30%;
     background: white;
-    border-radius: 10px; /* Reduced border-radius */
-    padding: 15px;
-    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
-    width: 100%; /* Full width */
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 16px;
 }
 
 .chart-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px; /* Reduced margin */
+    margin-bottom: 16px;
 }
 
 .chart-title {
-    font-size: 1.2rem; /* Smaller font size */
-    color: #333; /* Darker color */
+    font-size: 1.25rem;
+    font-weight: 600;
 }
 
 .total-budget {
-    font-size: 1rem; /* Smaller font size */
-    color: #388e3c; /* Slightly darker color */
-    font-weight: 500; /* Reduced font weight */
+    font-size: 1.1rem;
+    font-weight: 500;
+    color: #4a5568;
 }
 
 .chart-container {
-    height: 300px; /* Reduced height */
-    width: 100%; /* Full width */
-    margin: 0 auto;
+    height: 300px;
+    position: relative;
 }
 
+/* Category breakdown styles */
 .grid-layout {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); /* Smaller columns */
-    gap: 15px; /* Reduced gap */
-    margin-top: 15px; /* Reduced margin */
+    flex: 1;
+    max-width: 30%;
 }
 
 .category-card {
     background: white;
-    border-radius: 10px;
-    padding: 15px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 16px;
+    height: 100%;
+}
+
+.category-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 16px;
 }
 
 .category-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 8px 0; /* Reduced padding */
-    border-bottom: 1px solid #ddd; /* Lighter border */
+    padding: 8px 0;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.category-item:last-child {
+    border-bottom: none;
 }
 
 .category-name {
     display: flex;
     align-items: center;
-    gap: 8px; /* Smaller gap */
+    gap: 8px;
 }
 
 .color-dot {
-    width: 10px; /* Smaller dot */
-    height: 10px;
+    width: 12px;
+    height: 12px;
     border-radius: 50%;
 }
 
 .category-amount {
-    font-weight: 500; /* Reduced font weight */
+    font-weight: 500;
+    color: #4a5568;
 }
 
+/* No data message */
 .no-data {
     text-align: center;
-    padding: 30px;
-    font-size: 1rem; /* Smaller font size */
-    color: #777; /* Lighter color */
+    padding: 40px 20px;
+    color: #718096;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .cards {
+        flex-direction: column;
+    }
+    
+    .chart-card, .grid-layout {
+        min-width: 100%;
+    }
+    
+    .chart-container {
+        height: 250px;
+    }
+}
+
+/* Chart.js tooltip customization */
+canvas {
+    max-width: 100%;
 }
