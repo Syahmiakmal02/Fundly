@@ -8,6 +8,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/landingPage.css">
     <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
+    <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
 <body>
     <nav class="landing-nav">
@@ -19,6 +20,10 @@
             <div class="nav-links">
                 <a href="auth/login.php" class="login-btn">Login</a>
                 <a href="auth/register.php" class="register-btn">Get Started</a>
+                <button
+                id="theme-toggle">
+                <i class="fas fa-sun" id="theme-icon"></i>
+                </button>
             </div>
         </div>
     </nav>
@@ -68,5 +73,32 @@
             </div>
         </div>
     </footer>
+    <script>
+        // script.js
+        const themeToggleButton = document.getElementById("theme-toggle");
+        const themeIcon = document.getElementById("theme-icon");
+        const currentTheme = localStorage.getItem("theme");
+
+        // Apply saved theme on page load
+        if (currentTheme) {
+        document.documentElement.setAttribute("data-theme", currentTheme);
+        themeIcon.className =
+            currentTheme === "dark" ? "fas fa-moon" : "fas fa-sun"; // Switch icon
+        }
+
+        themeToggleButton.addEventListener("click", () => {
+        const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
+
+        // Toggle theme
+        const newTheme = isDarkMode ? "light" : "dark";
+        document.documentElement.setAttribute("data-theme", newTheme);
+
+        // Save preference to localStorage
+        localStorage.setItem("theme", newTheme);
+
+        // Update icon
+        themeIcon.className = newTheme === "dark" ? "fas fa-moon" : "fas fa-sun";
+        });
+    </script>
 </body>
 </html>

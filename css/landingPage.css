@@ -1,4 +1,5 @@
 /* css/landing.css */
+/* Default Light Mode */
 :root {
     --primary-color: #3b82f6;
     --primary-dark: #2563eb;
@@ -7,6 +8,31 @@
     --text-color: #1e293b;
     --white: #ffffff;
 }
+
+/* Dark Mode */
+[data-theme="dark"] {
+    --primary-color: #90caf9;
+    --primary-dark: #42a5f5;
+    --secondary-color: #cbd5e1;
+    --background-color: #1e293b;
+    --text-color: #f8fafc;
+    --white: #0f172a;
+}
+
+/* Theme Toggle Button */
+#theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    font-size: 1.5rem;
+    color: var(--primary-color);
+    transition: color 0.3s ease;
+}
+
+#theme-toggle:hover {
+    color: var(--primary-dark);
+}
+
 
 * {
     margin: 0;
@@ -183,7 +209,7 @@ body {
 
 /* Footer */
 .landing-footer {
-    background-color: var(--text-color);
+    background-color: var(--primary-color);
     color: var(--white);
     padding: 2rem 0;
 }
