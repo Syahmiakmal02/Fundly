@@ -22,7 +22,6 @@
 }
 
 .chart-header {
-    display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 16px;
@@ -36,7 +35,7 @@
 .total-budget {
     font-size: 1.1rem;
     font-weight: 500;
-    color: #4a5568;
+    color: black;
 }
 
 .chart-container {
