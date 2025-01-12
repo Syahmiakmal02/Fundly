@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+    <link rel="stylesheet" href="../css/landingPage.css">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Welcome to Fundly - Smart Financial Management for Students</title>
@@ -18,8 +19,8 @@
                 <span>Fundly</span>
             </div>
             <div class="nav-links">
-                <a href="auth/login.php" class="login-btn">Login</a>
-                <a href="auth/register.php" class="register-btn">Get Started</a>
+                <a href="../auth/login.php" class="login-btn">Login</a>
+                <a href="../auth/register.php" class="register-btn">Get Started</a>
                 <button
                 id="theme-toggle">
                 <i class="fas fa-sun" id="theme-icon"></i>

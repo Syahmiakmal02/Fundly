@@ -8,7 +8,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $password = $_POST['password'];
 
     // Prepare statement to prevent SQL injection
-    $sql = "SELECT email, name, password FROM users WHERE email = ?";
+    $sql = "SELECT user_id, email, name, password, role FROM users WHERE email = ?";
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {
@@ -18,11 +18,20 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $user = $result->fetch_assoc();
 
         if ($result->num_rows > 0 && password_verify($password, $user['password'])) {
+            // Store user data in session
+            $_SESSION['user_id'] = $user['user_id'];
             $_SESSION['email'] = $user['email'];
             $_SESSION['name'] = $user['name'];
+            $_SESSION['role'] = $user['role'];
             $_SESSION['logged_in'] = true;
-            $_SESSION['success'] = "Hello, " . $user['name']; // Store success message
-            header("Location: login.php");
+            $_SESSION['success'] = "Hello, " . $user['name'];
+
+            // Redirect based on role
+            if ($user['role'] === 'admin') {
+                header("Location: ../views/admin.php");
+            } else {
+                header("Location: ../index.php");
+            }
             exit();
         } else {
             $_SESSION['error'] = "Invalid email or password";
@@ -39,7 +48,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <!DOCTYPE html>
 <html>
-
 <head>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +55,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <link rel="stylesheet" href="../css/auth.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
-
 </head>
 
 <body>
@@ -95,7 +102,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
                     text: 'You are now logged in',
                 }).then((result) => {
                     if (result.isConfirmed || result.isDismissed) {
-                        window.location.href = '../index.php'; // Redirect after confirmation
+                        <?php if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin'): ?>
+                            window.location.href = '../views/admin.php';
+                        <?php else: ?>
+                            window.location.href = '../index.php';
+                        <?php endif; ?>
                     }
                 });
                 <?php unset($_SESSION['success']); ?>
@@ -103,5 +114,4 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         });
     </script>
 </body>
-
 </html>
