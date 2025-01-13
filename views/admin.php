@@ -12,12 +12,12 @@ if (!isset($_SESSION['logged_in']) || $_SESSION['role'] !== 'admin') {
 // Handle DELETE request for user deletion
 if ($_SERVER['REQUEST_METHOD'] === 'DELETE' || (isset($_GET['action']) && $_GET['action'] === 'delete')) {
     $userId = isset($_GET['id']) ? (int)$_GET['id'] : 0;
-    
+
     if ($userId !== $_SESSION['user_id']) {  // Prevent self-deletion
         $deleteSQL = "DELETE FROM users WHERE user_id = ?";
         $stmt = $conn->prepare($deleteSQL);
         $stmt->bind_param("i", $userId);
-        
+
         if ($stmt->execute()) {
             echo json_encode(['success' => true]);
         } else {
@@ -33,12 +33,12 @@ if ($_SERVER['REQUEST_METHOD'] === 'DELETE' || (isset($_GET['action']) && $_GET[
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $userId = isset($_POST['user_id']) ? (int)$_POST['user_id'] : 0;
     $newRole = isset($_POST['role']) ? $_POST['role'] : '';
-    
+
     if ($userId && ($newRole === 'admin' || $newRole === 'student')) {
         $updateSQL = "UPDATE users SET role = ? WHERE user_id = ?";
         $stmt = $conn->prepare($updateSQL);
         $stmt->bind_param("si", $newRole, $userId);
-        
+
         if ($stmt->execute()) {
             echo json_encode(['success' => true]);
         } else {
@@ -50,12 +50,24 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     exit();
 }
 
-// Fetch all users for the admin to manage
-$sql = "SELECT user_id, email, name, role FROM users ORDER BY user_id DESC";
-$result = $conn->query($sql);
+// Get the current page number from the request, default to 1 if not set
+$page = isset($_GET['page']) ? (int)$_GET['page'] : 1;
+$limit = 5;  // Maximum 5 users per page
+$offset = ($page - 1) * $limit;
+
+// Fetch users for the current page
+$sql = "SELECT user_id, email, name, role FROM users ORDER BY user_id DESC LIMIT ? OFFSET ?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("ii", $limit, $offset);
+$stmt->execute();
+$result = $stmt->get_result();
 $users = $result->fetch_all(MYSQLI_ASSOC);
 
-// Get some basic stats
+// Fetch total number of users for pagination
+$total_users_count = $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'];
+$total_pages = ceil($total_users_count / $limit);
+
+// Fetch user stats
 $total_users = $conn->query("SELECT COUNT(*) as count FROM users")->fetch_assoc()['count'];
 $student_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'student'")->fetch_assoc()['count'];
 $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'admin'")->fetch_assoc()['count'];
@@ -65,15 +77,13 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
 <html>
 <head>
     <title>Admin Dashboard</title>
-    <link rel="stylesheet"href="../css/admin.css">
+    <link rel="stylesheet" href="../css/admin.css">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="../css/admin.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="shortcut icon" href="../imgs/logo.png" type="image/x-icon">
 </head>
-
 <body>
     <div class="admin-container">
         <header class="admin-header">
@@ -112,7 +122,7 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
                     </tr>
                 </thead>
                 <tbody>
-                    <?php if (isset($users) && !empty($users)): ?>
+                    <?php if (!empty($users)): ?>
                         <?php foreach ($users as $user): ?>
                         <tr>
                             <td><?php echo htmlspecialchars($user['user_id']); ?></td>
@@ -134,6 +144,18 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
                     <?php endif; ?>
                 </tbody>
             </table>
+
+            <div class="pagination">
+                <?php if ($page > 1): ?>
+                    <a href="?page=<?php echo $page - 1; ?>" class="pagination-prev">Previous</a>
+                <?php endif; ?>
+
+                <span>Page <?php echo $page; ?> of <?php echo $total_pages; ?></span>
+
+                <?php if ($page < $total_pages): ?>
+                    <a href="?page=<?php echo $page + 1; ?>" class="pagination-next">Next</a>
+                <?php endif; ?>
+            </div>
         </div>
     </div>
 

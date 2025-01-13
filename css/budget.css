@@ -195,6 +195,52 @@ input:focus, select:focus {
     color: #374151;
 }
 
+.category-rent-accommodation {
+    background-color: #FF5733; /* Orange */
+    color: white;
+}
+
+.category-transportation {
+    background-color: #33A1FF; /* Blue */
+    color: white;
+}
+
+.category-groceries {
+    background-color: #4CAF50; /* Green */
+    color: white;
+}
+
+.category-utilities {
+    background-color: #FFC300; /* Yellow */
+    color: black;
+}
+
+.category-books-supplies {
+    background-color: #8E44AD; /* Purple */
+    color: white;
+}
+
+.category-entertainment {
+    background-color: #E74C3C; /* Red */
+    color: white;
+}
+
+.category-healthcare {
+    background-color: #2ECC71; /* Light Green */
+    color: white;
+}
+
+.category-food {
+    background-color: #F39C12; /* Gold */
+    color: white;
+}
+
+.category-others {
+    background-color: #95A5A6; /* Gray */
+    color: white;
+}
+
+
 .amount-cell {
     font-weight: 500;
     color: #374151;

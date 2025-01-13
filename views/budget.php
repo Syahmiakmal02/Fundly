@@ -21,34 +21,36 @@ if (isset($_SESSION['email'])) {
 }
 
 // Form Handlers
-function handleBudgetSubmission($conn, $user_id) {
+function handleBudgetSubmission($conn, $user_id)
+{
     if ($_SERVER['REQUEST_METHOD'] != 'POST') return null;
-    
+
     if (isset($_POST['delete'])) {
         return handleDelete($conn, $user_id, $_POST['budget_id']);
     }
-    
+
     if (isset($_POST['update'])) {
         return handleUpdate($conn, $user_id, $_POST);
     }
-    
+
     return handleInsert($conn, $user_id, $_POST);
 }
 
-function handleInsert($conn, $user_id, $data) {
+function handleInsert($conn, $user_id, $data)
+{
     $category = $conn->real_escape_string($data['category']);
     $amount = floatval($data['amount']);
     $month = $conn->real_escape_string($data['month']);
 
     $sql = "INSERT INTO budgets (user_id, category, amount, month) VALUES (?, ?, ?, ?)";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("isds", $user_id, $category, $amount, $month);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Budget entry successfully saved!";
             header("Location: index.php?page=budget");
@@ -59,7 +61,8 @@ function handleInsert($conn, $user_id, $data) {
     return "Failed to prepare statement";
 }
 
-function handleUpdate($conn, $user_id, $data) {
+function handleUpdate($conn, $user_id, $data)
+{
     $budget_id = intval($data['budget_id']);
     $category = $conn->real_escape_string($data['category']);
     $amount = floatval($data['amount']);
@@ -67,13 +70,13 @@ function handleUpdate($conn, $user_id, $data) {
 
     $sql = "UPDATE budgets SET category = ?, amount = ?, month = ? WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("sdsii", $category, $amount, $month, $budget_id, $user_id);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Budget entry updated successfully!";
             header("Location: index.php?page=budget");
@@ -84,17 +87,18 @@ function handleUpdate($conn, $user_id, $data) {
     return "Failed to prepare statement";
 }
 
-function handleDelete($conn, $user_id, $budget_id) {
+function handleDelete($conn, $user_id, $budget_id)
+{
     $budget_id = intval($budget_id);
     $sql = "DELETE FROM budgets WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("ii", $budget_id, $user_id);
         $success = $stmt->execute();
         $error = $success ? null : $stmt->error;
         $stmt->close();
-        
+
         if ($success) {
             $_SESSION['message'] = "Budget entry deleted successfully!";
             header("Location: index.php?page=budget");
@@ -106,10 +110,11 @@ function handleDelete($conn, $user_id, $budget_id) {
 }
 
 // Data Fetchers
-function fetchEditData($conn, $user_id, $budget_id) {
+function fetchEditData($conn, $user_id, $budget_id)
+{
     $sql = "SELECT * FROM budgets WHERE budget_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("ii", $budget_id, $user_id);
         $stmt->execute();
@@ -121,11 +126,12 @@ function fetchEditData($conn, $user_id, $budget_id) {
     return null;
 }
 
-function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page) {
+function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page)
+{
     $offset = ($current_page - 1) * $entries_per_page;
     $sql = "SELECT * FROM budgets WHERE user_id = ? ORDER BY month DESC LIMIT ? OFFSET ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("iii", $user_id, $entries_per_page, $offset);
         $stmt->execute();
@@ -136,10 +142,11 @@ function fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page) {
     return null;
 }
 
-function calculateTotalBudget($conn, $user_id) {
+function calculateTotalBudget($conn, $user_id)
+{
     $sql = "SELECT SUM(amount) as total FROM budgets WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -151,10 +158,11 @@ function calculateTotalBudget($conn, $user_id) {
     return 0;
 }
 
-function getPaginationData($conn, $user_id, $entries_per_page) {
+function getPaginationData($conn, $user_id, $entries_per_page)
+{
     $sql = "SELECT COUNT(*) as count FROM budgets WHERE user_id = ?";
     $stmt = $conn->prepare($sql);
-    
+
     if ($stmt) {
         $stmt->bind_param("i", $user_id);
         $stmt->execute();
@@ -166,7 +174,8 @@ function getPaginationData($conn, $user_id, $entries_per_page) {
     return 0;
 }
 
-function getCategories() {
+function getCategories()
+{
     return [
         'Rent/Accommodation',
         'Transportation',
@@ -183,8 +192,8 @@ function getCategories() {
 // Main Execution
 $current_page = isset($_GET['p']) ? max(1, intval($_GET['p'])) : 1;
 $error = handleBudgetSubmission($conn, $user_id);
-$edit_data = isset($_GET['edit']) && isset($_GET['budget_id']) ? 
-             fetchEditData($conn, $user_id, $_GET['budget_id']) : null;
+$edit_data = isset($_GET['edit']) && isset($_GET['budget_id']) ?
+    fetchEditData($conn, $user_id, $_GET['budget_id']) : null;
 $budgets = fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page);
 $total_budget = calculateTotalBudget($conn, $user_id);
 $total_pages = getPaginationData($conn, $user_id, $entries_per_page);
@@ -257,34 +266,34 @@ unset($_SESSION['message']);
             <?php if ($budgets && $budgets->num_rows > 0): ?>
                 <div class="budget-table-wrapper">
                     <table class="budget-table">
+                        <tr>
+                            <th>Month <button class="filter-btn" onclick="filterTable('month')"><i class="fas fa-filter"></i></button></th>
+                            <th>Category <button class="filter-btn" onclick="filterTable('category')"><i class="fas fa-filter"></i></button></th>
+                            <th>Amount <button class="filter-btn" onclick="filterTable('amount')"><i class="fas fa-filter"></i></button></th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+                        <tbody id="budgetTable">
+                            <?php while ($budget = $budgets->fetch_assoc()): ?>
                                 <tr>
-                                <th>Month <button class="filter-btn" onclick="filterTable('month')"><i class="fas fa-filter"></i></button></th>
-                                <th>Category <button class="filter-btn" onclick="filterTable('category')"><i class="fas fa-filter"></i></button></th>
-                                <th>Amount <button class="filter-btn" onclick="filterTable('amount')"><i class="fas fa-filter"></i></button></th>
-                                <th>Actions</th>
+                                    <td><?php echo htmlspecialchars($budget['month']); ?></td>
+                                    <td>
+                                        <span class="category-badge category-<?php echo strtolower(str_replace('/', '-', htmlspecialchars($budget['category']))); ?>">
+                                            <?php echo htmlspecialchars($budget['category']); ?>
+                                        </span>
+                                    </td>
+                                    <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
+                                    <td>
+                                        <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
+                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                            <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
+                                            <input type="hidden" name="delete" value="1">
+                                            <button type="submit" class="action-btn delete-btn">Delete</button>
+                                        </form>
+                                    </td>
                                 </tr>
-                            </thead>
-                            <tbody id="budgetTable">
-                                <?php while ($budget = $budgets->fetch_assoc()): ?>
-                                    <tr>
-                                        <td><?php echo htmlspecialchars($budget['month']); ?></td>
-                                        <td>
-                                            <span class="category-badge">
-                                                <?php echo htmlspecialchars($budget['category']); ?>
-                                            </span>
-                                        </td>
-                                        <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
-                                        <td>
-                                            <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
-                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                                <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
-                                                <input type="hidden" name="delete" value="1">
-                                                <button type="submit" class="action-btn delete-btn">Delete</button>
-                                            </form>
-                                        </td>
-                                    </tr>
-                                <?php endwhile; ?>
-                            </tbody>
+                            <?php endwhile; ?>
+                        </tbody>
                     </table>
                 </div>
 
@@ -333,69 +342,69 @@ unset($_SESSION['message']);
     </div>
 </div>
 <script>
-let sortDirections = {
-    month: 'asc',
-    category: 'asc',
-    amount: 'asc'
-};
+    let sortDirections = {
+        month: 'asc',
+        category: 'asc',
+        amount: 'asc'
+    };
 
-function filterTable(column) {
-    var table, rows, switching, i, x, y, shouldSwitch;
-    table = document.getElementById("budgetTable");
-    switching = true;
-    let direction = sortDirections[column];
+    function filterTable(column) {
+        var table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("budgetTable");
+        switching = true;
+        let direction = sortDirections[column];
 
-    while (switching) {
-        switching = false;
-        rows = table.rows;
-        for (i = 0; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
-            y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
-            if (direction === 'asc') {
-                if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
-                    shouldSwitch = true;
-                    break;
-                }
-            } else {
-                if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
-                    shouldSwitch = true;
-                    break;
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 0; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
+                y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
+                if (direction === 'asc') {
+                    if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
+                        shouldSwitch = true;
+                        break;
+                    }
+                } else {
+                    if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
+                        shouldSwitch = true;
+                        break;
+                    }
                 }
             }
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
         }
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
+
+        // Toggle the direction for the next click
+        sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
+    }
+
+    function getColumnIndex(column) {
+        switch (column) {
+            case 'month':
+                return 0;
+            case 'category':
+                return 1;
+            case 'amount':
+                return 2;
+            default:
+                return 0;
         }
     }
 
-    // Toggle the direction for the next click
-    sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
-}
-
-function getColumnIndex(column) {
-    switch (column) {
-        case 'month':
-            return 0;
-        case 'category':
-            return 1;
-        case 'amount':
-            return 2;
-        default:
-            return 0;
+    function compareValues(a, b, column) {
+        if (column === 'amount') {
+            return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
+        } else if (column === 'month') {
+            return new Date(a) - new Date(b);
+        } else {
+            return a.localeCompare(b);
+        }
     }
-}
-
-function compareValues(a, b, column) {
-    if (column === 'amount') {
-        return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
-    } else if (column === 'month') {
-        return new Date(a) - new Date(b);
-    } else {
-        return a.localeCompare(b);
-    }
-}
 </script>
 
 <?php $conn->close(); ?>
