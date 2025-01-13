@@ -149,9 +149,8 @@ $conn->close();
             <?php endif; ?>
         </div>
     </div>
-</div>
 
-<div class="card-savings">
+    <div class="card-savings">
     <?php 
     $total_collected_amount = 0;
     $total_saving = 0;
@@ -160,7 +159,7 @@ $conn->close();
         $total_collected_amount += $row['collected_amount'];
     }
     ?>
-    <div class="h3-total-savings">
+    <div class="card-header">
         <h3>Target Savings: </h3>
         <h3 class="saving-amount">RM <?php echo number_format($total_collected_amount, 2); ?><span style="color: black;"> / RM <?php echo number_format($total_saving, 2); ?></span></h3>
     </div>
@@ -187,6 +186,9 @@ $conn->close();
         </div>
     <?php endwhile; ?>
 </div>
+</div>
+
+
 
 
 <script>

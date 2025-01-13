@@ -18,10 +18,13 @@
 }
 
 .card-header {
+    width: 95%;
     display: flex;
     justify-content: space-between;
     align-items: center;
     margin-bottom: 20px;
+    margin-left: auto;
+    margin-right: auto;
 }
 
 .chart-controls {
