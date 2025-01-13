@@ -73,7 +73,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <div class="card">
         <div class="login-container">
             <div class="login-header">
-                <h2>Register Account</h2>
+                <div class="image-placeholder">
+                    <img src="/imgs/logo.png" alt="Profile Placeholder" class="profile-image">
+                </div>
+                <h2>Fundly - Register Account</h2>
             </div>
 
             <form action="register.php" method="POST" class="login-form">

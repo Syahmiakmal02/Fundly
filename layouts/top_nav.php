@@ -22,7 +22,7 @@
                 <span class="arrow"></span>
             </button>
             <div class="dropdown-content">
-                <a href="?page=profile" class="<?php echo (isset($_GET['page']) && $_GET['page'] === 'profile') ? 'active' : ''; ?>"><i class="fas fa-user-circle"></i> Profile</a>
+                <a href="views/profile.php" class="<?php echo (isset($_GET['page']) && $_GET['page'] === 'profile') ? 'active' : ''; ?>"><i class="fas fa-user-circle"></i> Profile</a>
                 <a href="?action=logout" class="logout-option"><i class="fas fa-sign-out-alt"></i> Logout</a>
             </div>
         </div>

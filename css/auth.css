@@ -133,3 +133,18 @@ hr {
     color: #1A4870;
     text-decoration: underline;
 }
+
+/* Profile Image Placeholder Styles */
+.image-placeholder {
+    text-align: center; /* Center the image */
+    margin-bottom: 20px; /* Add space below the image */
+}
+
+.profile-image {
+    width: 100px; /* Set width of the image */
+    height: 100px; /* Set height of the image */
+    border-radius: 50%; /* Make it circular */
+    object-fit: cover; /* Ensure the image scales nicely */
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Add a subtle shadow for depth */
+    border: none; /* Remove border */
+}
