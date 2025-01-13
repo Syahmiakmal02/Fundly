@@ -42,14 +42,14 @@ input {
 }
 
 input:focus {
-    border-color: #3b82f6;
+    border-color: #06D001;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     outline: none;
 }
 
 /* Summary Card */
 .summary-card {
-    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    background: linear-gradient(135deg, #04b416 0%, #06D001 100%);
     color: white;
 }
 
@@ -118,7 +118,7 @@ input:focus {
 
 .btn-update {
     padding: 0.5rem 1rem;
-    background-color: #3b82f6;
+    background-color: #42c43f;
     color: white;
     border: none;
     border-radius: 6px;
@@ -127,7 +127,7 @@ input:focus {
 }
 
 .btn-update:hover {
-    background-color: #2563eb;
+    background-color: #04ee00;
 }
 
 .collected-amount {
@@ -142,11 +142,12 @@ input:focus {
 
 /* Action Buttons */
 .action-btn {
-    padding: 0.5rem;
+    padding: 0.5rem 1rem;
     border: none;
     border-radius: 6px;
+    font-size: 0.875rem;
     cursor: pointer;
-    transition: background-color 0.2s;
+    transition: background-color 0.2s
 }
 
 .delete-btn {
@@ -161,7 +162,7 @@ input:focus {
 .btn-submit {
     width: 100%;
     padding: 0.75rem;
-    background-color: #3b82f6;
+    background-color: #06D001;
     color: white;
     border: none;
     border-radius: 8px;
