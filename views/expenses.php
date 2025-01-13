@@ -127,7 +127,7 @@ function fetchExpenseForEdit($conn, $user_id, $expense_id)
 }
 
 // Modified function to fetch expenses with search
-function fetchExpenses($conn, $user_id, $search = '', $limit, $offset)
+function fetchExpenses($conn, $user_id, $limit, $offset, $search = '')
 {
     $search = '%' . $search . '%';
     $sql = "SELECT * FROM expenses 
@@ -224,7 +224,7 @@ $current_page = isset($_GET['p']) ? max(1, min($total_pages, intval($_GET['p']))
 $offset = ($current_page - 1) * $entries_per_page;
 
 // Fetch expenses with search
-$expenses = fetchExpenses($conn, $user_id, $search_term, $entries_per_page, $offset);
+$expenses = fetchExpenses($conn, $user_id, $entries_per_page, $offset, $search_term);
 
 $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 unset($_SESSION['message']);
