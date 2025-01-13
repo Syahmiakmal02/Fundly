@@ -18,6 +18,14 @@ if (isset($_SESSION['email'])) {
     $stmt->close();
 }
 
+function fetchSavingGoals($conn, $user_id) {
+    $sql = "SELECT saving_id, goal_name, collected_amount, goal_amount, account, due_date FROM savings WHERE user_id = ?";
+    $stmt = $conn->prepare($sql);
+    $stmt->bind_param("i", $user_id);
+    $stmt->execute();
+    return $stmt->get_result();
+}
+
 // Fetch all data in one query with monthly grouping
 $query = "
     SELECT 
@@ -40,27 +48,19 @@ $query = "
     WHERE user_id = ? 
     AND date >= DATE_SUB(CURRENT_DATE, INTERVAL 6 MONTH)
     GROUP BY category, DATE_FORMAT(date, '%Y-%m')
-    
-    UNION ALL
-    
-    SELECT 
-        'saving' as type,
-        goal_name as category,
-        collected_amount as amount,
-        DATE_FORMAT(due_date, '%Y-%m') as month
-    FROM savings
-    WHERE user_id = ?
 ";
 
 $stmt = $conn->prepare($query);
-$stmt->bind_param("iii", $user_id, $user_id, $user_id);
+$stmt->bind_param("ii", $user_id, $user_id);
 $stmt->execute();
 $result = $stmt->get_result();
+
+$saving_data = fetchSavingGoals($conn, $user_id);
+$total_saving = 0;
 
 // Initialize data arrays
 $budget_data = ['categories' => [], 'amounts' => [], 'total' => 0];
 $expense_data = [];
-$savings_data = ['goals' => [], 'amounts' => []];
 
 // Process results
 while ($row = $result->fetch_assoc()) {
@@ -76,16 +76,13 @@ while ($row = $result->fetch_assoc()) {
             }
             $expense_data[$row['month']][$row['category']] = floatval($row['amount']);
             break;
-        case 'saving':
-            $savings_data['goals'][] = $row['category'];
-            $savings_data['amounts'][] = floatval($row['amount']);
-            break;
     }
 }
 
 $stmt->close();
 $conn->close();
 ?>
+
 
 <div class="dashboard-container">
     <div class="dashboard-grid">
@@ -151,38 +148,46 @@ $conn->close();
                 </table>
             <?php endif; ?>
         </div>
-
-        <!-- Savings Progress -->
-        <div class="dashboard-card">
-            <div class="card-header">
-                <h2 class="card-title">Savings Progress</h2>
-            </div>
-            <?php if (empty($savings_data['goals'])): ?>
-                <div class="no-data">No savings data available</div>
-            <?php else: ?>
-                <div class="chart-container">
-                    <canvas id="savingsChart"></canvas>
-                </div>
-                <table class="data-table">
-                    <thead>
-                        <tr>
-                            <th>Goal</th>
-                            <th>Amount Saved</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <?php foreach ($savings_data['goals'] as $i => $goal): ?>
-                            <tr>
-                                <td><?php echo htmlspecialchars($goal); ?></td>
-                                <td>RM <?php echo number_format($savings_data['amounts'][$i], 2); ?></td>
-                            </tr>
-                        <?php endforeach; ?>
-                    </tbody>
-                </table>
-            <?php endif; ?>
-        </div>
     </div>
 </div>
+
+<div class="card-savings">
+    <?php 
+    $total_collected_amount = 0;
+    $total_saving = 0;
+    while ($row = $saving_data->fetch_assoc()) {
+        $total_saving += $row['goal_amount'];
+        $total_collected_amount += $row['collected_amount'];
+    }
+    ?>
+    <div class="h3-total-savings">
+        <h3>Target Savings: </h3>
+        <h3 class="saving-amount">RM <?php echo number_format($total_collected_amount, 2); ?><span style="color: black;"> / RM <?php echo number_format($total_saving, 2); ?></span></h3>
+    </div>
+    <?php $saving_data->data_seek(0); 
+    while ($row = $saving_data->fetch_assoc()): ?>
+        <div class="container">
+            <div class="progress">
+                <?php if ($row['collected_amount'] == 0): ?>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                        style="width: 0%">
+                    </div>
+                    <div class="progress-text-center">
+                        <?php echo htmlspecialchars($row['goal_name']); ?> 
+                        (RM 0.00 / RM <?php echo number_format($row['goal_amount'], 2); ?>)
+                    </div>
+                <?php else: ?>
+                    <div class="progress-bar progress-bar-striped progress-bar-animated" 
+                        style="width:<?php echo number_format(($row['collected_amount'] / $row['goal_amount']) * 100, 2) . '%'; ?>">
+                        <?php echo htmlspecialchars($row['goal_name']); ?>
+                        (RM <?php echo number_format($row['collected_amount'], 2); ?> / RM <?php echo number_format($row['goal_amount'], 2); ?>)
+                    </div>
+                <?php endif; ?>
+            </div>
+        </div>
+    <?php endwhile; ?>
+</div>
+
 
 <script>
 // Simple chart initialization with minimal configuration
@@ -223,28 +228,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 label: 'Monthly Expenses',
                 data: Object.values(<?php echo json_encode($expense_data); ?>).map(m => Object.values(m).reduce((a, b) => a + b, 0)),
                 backgroundColor: colors[1]
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            scales: {
-                y: { beginAtZero: true }
-            }
-        }
-    });
-    <?php endif; ?>
-
-    // Savings Chart
-    <?php if (!empty($savings_data['goals'])): ?>
-    new Chart(document.getElementById('savingsChart'), {
-        type: 'bar',
-        data: {
-            labels: <?php echo json_encode($savings_data['goals']); ?>,
-            datasets: [{
-                label: 'Amount Saved',
-                data: <?php echo json_encode($savings_data['amounts']); ?>,
-                backgroundColor: colors[2]
             }]
         },
         options: {
