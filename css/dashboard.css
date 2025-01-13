@@ -104,7 +104,7 @@
     font-size: 14px;
     height: 100%;
     line-height: 40px;
-    background-color: #36A2EB  ;
+    /* background-color: #36A2EB; */
     color: white;
     font-weight: bold;
     text-align: center;
@@ -147,4 +147,88 @@
 .saving-amount{
     color: #2e7d32;
     font-weight: bold;
+}
+
+/* Namespace all styles under .savings-dashboard to avoid collisions */
+.savings-dashboard {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f8f9fa;
+}
+
+.savings-dashboard .card-savings {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    background: white;
+    padding: 20px;
+    border-radius: 15px;
+    margin: 20px auto;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.savings-dashboard .card-header {
+    width: 95%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.savings-dashboard .saving-amount {
+    color: #2e7d32;
+    font-weight: bold;
+}
+
+.savings-dashboard .container {
+    width: 100%;
+    margin: 0 auto;
+}
+
+.savings-dashboard .progress {
+    height: 40px;
+    border-radius: 10px;
+    background-color: #f3f3f3;
+    overflow: hidden;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.savings-dashboard .progress-bar {
+    font-size: 14px;
+    height: 100%;
+    line-height: 40px;
+    background-color: #2563eb;
+    color: white;
+    font-weight: bold;
+    text-align: center;
+    transition: width 0.5s ease-in-out;
+}
+
+.savings-dashboard .progress-text-center {
+    width: 100%;
+    font-size: 14px;
+    height: 40px;
+    line-height: 40px;
+    color: black;
+    font-weight: bold;
+    text-align: center;
+}
+
+.savings-dashboard h3 {
+    margin: 0;
+    font-size: 1.2rem;
+}
+
+/* Media Queries for Responsive Design */
+@media (max-width: 768px) {
+    .savings-dashboard .card-savings {
+        width: 100%;
+    }
+
+    .savings-dashboard .card-header {
+        flex-direction: column;
+        text-align: center;
+    }
 }
