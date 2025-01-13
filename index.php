@@ -8,9 +8,9 @@ if (!isset($_GET['page']) && (!isset($_SESSION['logged_in']) || $_SESSION['logge
 
 include 'layouts/header.php';
 include 'auth/db_config.php';
+
 // Add this after session_start()
-function checkAuth()
-{
+function checkAuth() {
     if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
         $_SESSION['error'] = "Please login to access this feature";
         header("Location: views/login.php");
@@ -26,42 +26,46 @@ if (isset($_GET['action']) && $_GET['action'] == 'logout') {
 }
 
 //function check name to dynamically change icon
-function checkName($name)
-{
-    if ($name == 'dashboard') {
-        return '<i class="fas fa-home"></i>';
-    } elseif ($name == 'budget') {
-        return '<i class="fas fa-wallet"></i>';
-    } elseif ($name == 'expenses') {
-        return '<i class="fas fa-receipt"></i>';
-    } elseif ($name == 'saving') {
-        return '<i class="fas fa-piggy-bank"></i>';
-    } elseif ($name == 'profile') {
-        return '<i class="fas fa-user-circle"></i>';
-    } elseif (empty($name)) {
-        return '';
-    }
-    return $name;
+function checkName($name) {
+    $icons = [
+        'dashboard' => '<i class="fas fa-home"></i>',
+        'budget' => '<i class="fas fa-wallet"></i>',
+        'expenses' => '<i class="fas fa-receipt"></i>',
+        'saving' => '<i class="fas fa-piggy-bank"></i>',
+        'profile' => '<i class="fas fa-user-circle"></i>'
+    ];
+    
+    return isset($icons[$name]) ? $icons[$name] : $name;
 }
 
 //get current page
 $current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
-
 ?>
 <!DOCTYPE html>
 <html>
-
 <head>
+    <!-- Meta tags -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" as="style">
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" as="style">
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;1,100;1,200;1,300;1,400;1,500;1,600;1,700&display=swap" rel="stylesheet">
-
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="css/styles.css">
 
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Load Chart.js from CDN with specific version -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    
+    <!-- Load SweetAlert with specific version -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.4.8/sweetalert2.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/sweetalert2/11.4.8/sweetalert2.min.css">
 
     <?php
+    // Page specific CSS
     switch ($current_page) {
         case 'dashboard':
         default:
@@ -83,10 +87,20 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
     ?>
 
     <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
-
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-
     <title><?php echo htmlspecialchars($website_name); ?></title>
+
+    <!-- Prevent CORS and quota issues -->
+    <script>
+        // Disable any automatic API calls
+        window.addEventListener('load', function() {
+            // Configure Chart.js defaults
+            if (typeof Chart !== 'undefined') {
+                Chart.defaults.font.family = "'Poppins', sans-serif";
+                Chart.defaults.responsive = true;
+                Chart.defaults.maintainAspectRatio = false;
+            }
+        });
+    </script>
 </head>
 
 <body>
@@ -113,27 +127,15 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
                     include 'views/dashboard.php';
                     break;
                 case 'budget':
-                    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-                        $_SESSION['error'] = "Please login to access Your Budget";
-                        header("Location: auth/login.php");
-                        exit();
-                    }
+                    checkAuth();
                     include 'views/budget.php';
                     break;
                 case 'expenses':
-                    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-                        $_SESSION['error'] = "Please login to access Your Expenses";
-                        header("Location: auth/login.php");
-                        exit();
-                    }
+                    checkAuth();
                     include 'views/expenses.php';
                     break;
                 case 'saving':
-                    if (!isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-                        $_SESSION['error'] = "Please login to access Your Saving";
-                        header("Location: auth/login.php");
-                        exit();
-                    }
+                    checkAuth();
                     include 'views/saving.php';
                     break;
                 default:
@@ -143,6 +145,6 @@ $current_page = isset($_GET['page']) ? $_GET['page'] : 'dashboard';
             ?>
         </div>
         <?php include 'layouts/footer.php'; ?>
+    </div>
 </body>
-
 </html>

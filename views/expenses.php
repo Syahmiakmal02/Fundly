@@ -295,16 +295,16 @@ unset($_SESSION['message']);
     <!-- Right Column - Expense List -->
     <div class="expense-list-section">
         <div class="card summary-card">
-            <h3>Monthly Summary</h3>
-            <div class="summary-content">
+            <h3><i class="fas fa-chart-line"></i> Monthly Summary</h3>
+            <div class="summary-content"> 
                 <div class="summary-item">
-                    <span class="label">This Month's Total</span>
+                    <span class="label"><i class="fas fa-calendar-alt"></i>  This Month's Total</span>
                     <span class="amount">RM <?php echo number_format($monthly_total, 2); ?></span>
                 </div>
             </div>
             <div class="summary-content">
                 <div class="summary-item">
-                    <span class="label">Overall Total Expenses</span>
+                    <span class="label"><i class="fas fa-wallet"></i> Overall Total Expenses</span>
                     <span class="amount">RM <?php echo number_format($total_expenses, 2); ?> </span>
                 </div>
             </div>
@@ -320,8 +320,10 @@ unset($_SESSION['message']);
                         value="<?php echo htmlspecialchars($search_term); ?>"
                         class="search-input">
                     <button type="submit" class="search-btn">Search</button>
-                    <a href="index.php?page=expenses" class="clear-search">Clear</a>
-
+                    <!-- <a href="index.php?page=expenses" class="clear-search">Clear</a> -->
+                    <?php if (!empty($search_term)): ?>
+                        <a href="index.php?page=expenses" class="clear-search">Clear</a>
+                    <?php endif; ?>
                 </div>
             </form>
 
@@ -330,7 +332,7 @@ unset($_SESSION['message']);
                     <table class="expense-table">
                         <thead>
                             <tr>
-                                <th>No</th>
+                                <th>No.</th>
                                 <th>Date</th>
                                 <th>Description</th>
                                 <th>Category</th>
@@ -354,12 +356,11 @@ unset($_SESSION['message']);
                                     <td class="amount-cell">RM <?php echo number_format($expense['amount'], 2); ?></td>
                                     <td class="actions-cell">
                                         <a href="index.php?page=expenses&edit=1&expense_id=<?php echo $expense['expense_id']; ?>"
-                                            class="action-btn edit-btn">Edit</a>
-                                        <form method="POST" style="display: inline;"
-                                            onsubmit="return confirm('Are you sure you want to delete this expense?');">
+                                            class="action-btn edit-btn"> <i class="fas fa-edit"></i></a>
+                                        <form method="POST" class="delete-expense-form" style="display: inline;">
                                             <input type="hidden" name="expense_id" value="<?php echo $expense['expense_id']; ?>">
                                             <input type="hidden" name="delete" value="1">
-                                            <button type="submit" class="action-btn delete-btn">Delete</button>
+                                            <button type="button" class="action-btn delete-btn" data-expense-id="<?php echo $expense['expense_id']; ?>"><i class="fas fa-trash-alt"></i></button>
                                         </form>
                                     </td>
                                 </tr>
@@ -417,5 +418,33 @@ unset($_SESSION['message']);
         </div>
     </div>
 </div>
+
+<script>
+    // Display success or error messages
+    document.addEventListener("DOMContentLoaded", () => {
+    document.querySelectorAll(".delete-btn").forEach(button => {
+        button.addEventListener("click", (event) => {
+            const form = button.closest("form");
+            const expenseId = button.getAttribute("data-expense-id");
+
+            Swal.fire({
+                title: 'Are you sure?',
+                text: "You won't be able to revert this!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Yes, delete it!',
+                reverseButtons: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    form.submit(); // Submit the form if confirmed
+                }
+            });
+        });
+    });
+});
+
+</script>
 
 <?php $conn->close(); ?>

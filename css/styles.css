@@ -203,10 +203,47 @@ h4{
 .footer {
     padding: 20px;
     text-align: center;
-    background: #ddd;
+    background: linear-gradient(135deg, #f0f0f0, #e0e0e0);
     margin-top: 20px;
-    border-radius: 10px;
+    border-radius: 12px;
+    font-family: 'Roboto', sans-serif;
+    color: #333;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
+
+.footer p {
+    margin: 5px 0;
+    font-size: 14px;
+    font-weight: bold;
+    color: #555;
+}
+
+.footer .team-members {
+    margin-top: 10px;
+}
+
+.footer .team-members h4 {
+    margin-bottom: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    color: #444;
+}
+
+.footer .team-members p {
+    font-size: 14px;
+    color: #555;
+    line-height: 1.6;
+    margin: 0 auto;
+    display: inline-block;
+    max-width: 80%;
+}
+
+.footer .team-members p span {
+    display: inline-block;
+    margin: 0 5px;
+}
+
+
 
 /* Horizontal Rule */
 hr {

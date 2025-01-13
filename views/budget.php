@@ -254,9 +254,9 @@ unset($_SESSION['message']);
     <!-- Right Column - Budget List -->
     <div class="budget-list-section">
         <div class="card summary-card">
-            <h3>Budget Summary</h3>
+            <h3><i class="fas fa-chart-pie"></i> Budget Summary</h3>
             <div class="summary-item">
-                <span class="label">Total Budget</span>
+                <span class="label"><i class="fas fa-wallet"></i> Total Budget</span>
                 <span class="amount">RM <?php echo number_format($total_budget, 2); ?></span>
             </div>
         </div>
@@ -284,13 +284,13 @@ unset($_SESSION['message']);
                                     </td>
                                     <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
                                     <td>
-                                        <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn">Edit</a>
-                                        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                            <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
-                                            <input type="hidden" name="delete" value="1">
-                                            <button type="submit" class="action-btn delete-btn">Delete</button>
-                                        </form>
-                                    </td>
+                                            <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
+                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
+                                                <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
+                                                <input type="hidden" name="delete" value="1">
+                                                <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
+                                            </form>
+                                        </td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>

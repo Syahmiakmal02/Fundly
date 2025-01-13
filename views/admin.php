@@ -75,6 +75,7 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
 
 <!DOCTYPE html>
 <html>
+
 <head>
     <title>Admin Dashboard</title>
     <link rel="stylesheet" href="../css/admin.css">
@@ -84,6 +85,7 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <link rel="shortcut icon" href="../imgs/logo.png" type="image/x-icon">
 </head>
+
 <body>
     <div class="admin-container">
         <header class="admin-header">
@@ -100,7 +102,7 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
                 <p><?php echo $total_users; ?></p>
             </div>
             <div class="stat-card">
-                <h3>Students</h3>
+                <h3>Users</h3>
                 <p><?php echo $student_users; ?></p>
             </div>
             <div class="stat-card">
@@ -114,6 +116,7 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
             <table class="users-table">
                 <thead>
                     <tr>
+                        <th>No.</th>
                         <th>ID</th>
                         <th>Name</th>
                         <th>Email</th>
@@ -123,19 +126,22 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
                 </thead>
                 <tbody>
                     <?php if (!empty($users)): ?>
-                        <?php foreach ($users as $user): ?>
-                        <tr>
-                            <td><?php echo htmlspecialchars($user['user_id']); ?></td>
-                            <td><?php echo htmlspecialchars($user['name']); ?></td>
-                            <td><?php echo htmlspecialchars($user['email']); ?></td>
-                            <td><?php echo htmlspecialchars($user['role']); ?></td>
-                            <td class="action-buttons">
-                                <button onclick="editUser(<?php echo $user['user_id']; ?>)" class="edit-btn">Edit</button>
-                                <?php if ($user['user_id'] !== $_SESSION['user_id']): ?>
-                                <button onclick="deleteUser(<?php echo $user['user_id']; ?>)" class="delete-btn">Delete</button>
-                                <?php endif; ?>
-                            </td>
-                        </tr>
+                        <?php
+                        $counter = 1;
+                        foreach ($users as $user): ?>
+                            <tr>
+                                <td><?php echo $counter++; ?></td>
+                                <td><?php echo htmlspecialchars($user['user_id']); ?></td>
+                                <td><?php echo htmlspecialchars($user['name']); ?></td>
+                                <td><?php echo htmlspecialchars($user['email']); ?></td>
+                                <td><?php echo htmlspecialchars($user['role']); ?></td>
+                                <td class="action-buttons">
+                                    <button onclick="editUser(<?php echo $user['user_id']; ?>)" class="edit-btn">Edit</button>
+                                    <?php if ($user['user_id'] !== $_SESSION['user_id']): ?>
+                                        <button onclick="deleteUser(<?php echo $user['user_id']; ?>)" class="delete-btn">Delete</button>
+                                    <?php endif; ?>
+                                </td>
+                            </tr>
                         <?php endforeach; ?>
                     <?php else: ?>
                         <tr>
@@ -182,28 +188,28 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
                     const formData = new FormData();
                     formData.append('user_id', userId);
                     formData.append('role', role);
-                    
+
                     return fetch(window.location.href, {
-                        method: 'POST',
-                        body: formData
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (!data.success) {
-                            throw new Error(data.message || 'Error updating user')
-                        }
-                        return data;
-                    })
-                    .catch(error => {
-                        Swal.showValidationMessage(`Request failed: ${error}`)
-                    })
+                            method: 'POST',
+                            body: formData
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (!data.success) {
+                                throw new Error(data.message || 'Error updating user')
+                            }
+                            return data;
+                        })
+                        .catch(error => {
+                            Swal.showValidationMessage(`Request failed: ${error}`)
+                        })
                 }
             }).then((result) => {
                 if (result.isConfirmed) {
                     Swal.fire('Updated!', 'User role has been updated.', 'success')
-                    .then(() => {
-                        window.location.reload();
-                    });
+                        .then(() => {
+                            window.location.reload();
+                        });
                 }
             });
         }
@@ -220,29 +226,30 @@ $admin_users = $conn->query("SELECT COUNT(*) as count FROM users WHERE role = 'a
             }).then((result) => {
                 if (result.isConfirmed) {
                     fetch(`${window.location.href}?action=delete&id=${userId}`, {
-                        method: 'DELETE'
-                    })
-                    .then(response => response.json())
-                    .then(data => {
-                        if (data.success) {
-                            Swal.fire(
-                                'Deleted!',
-                                'User has been deleted.',
-                                'success'
-                            ).then(() => {
-                                window.location.reload();
-                            });
-                        } else {
-                            Swal.fire(
-                                'Error!',
-                                data.message || 'There was a problem deleting the user.',
-                                'error'
-                            );
-                        }
-                    });
+                            method: 'DELETE'
+                        })
+                        .then(response => response.json())
+                        .then(data => {
+                            if (data.success) {
+                                Swal.fire(
+                                    'Deleted!',
+                                    'User has been deleted.',
+                                    'success'
+                                ).then(() => {
+                                    window.location.reload();
+                                });
+                            } else {
+                                Swal.fire(
+                                    'Error!',
+                                    data.message || 'There was a problem deleting the user.',
+                                    'error'
+                                );
+                            }
+                        });
                 }
             });
         }
     </script>
 </body>
+
 </html>
