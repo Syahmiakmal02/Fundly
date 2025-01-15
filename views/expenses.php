@@ -51,12 +51,14 @@ function handleInsert($conn, $user_id, $data)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Expense successfully recorded!";
+            $_SESSION['success_message'] = "Expense successfully added!";
             header("Location: index.php?page=expenses");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -69,7 +71,7 @@ function handleUpdate($conn, $user_id, $data)
     $date = $conn->real_escape_string($data['date']);
 
     $sql = "UPDATE expenses SET description = ?, category = ?, amount = ?, date = ? 
-            WHERE expense_id = ? AND user_id = ?";
+                WHERE expense_id = ? AND user_id = ?";
     $stmt = $conn->prepare($sql);
 
     if ($stmt) {
@@ -79,12 +81,14 @@ function handleUpdate($conn, $user_id, $data)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Expense updated successfully!";
+            $_SESSION['success_message'] = "Expense updated successfully!";
             header("Location: index.php?page=expenses");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -101,12 +105,14 @@ function handleDelete($conn, $user_id, $expense_id)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Expense deleted successfully!";
+            $_SESSION['success_message'] = "Expense deleted successfully!";
             header("Location: index.php?page=expenses");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -296,9 +302,9 @@ unset($_SESSION['message']);
     <div class="expense-list-section">
         <div class="card summary-card">
             <h3><i class="fas fa-chart-line"></i> Monthly Summary</h3>
-            <div class="summary-content"> 
+            <div class="summary-content">
                 <div class="summary-item">
-                    <span class="label"><i class="fas fa-calendar-alt"></i>  This Month's Total</span>
+                    <span class="label"><i class="fas fa-calendar-alt"></i> This Month's Total</span>
                     <span class="amount">RM <?php echo number_format($monthly_total, 2); ?></span>
                 </div>
             </div>
@@ -419,32 +425,92 @@ unset($_SESSION['message']);
     </div>
 </div>
 
-<script>
-    // Display success or error messages
-    document.addEventListener("DOMContentLoaded", () => {
-    document.querySelectorAll(".delete-btn").forEach(button => {
-        button.addEventListener("click", (event) => {
-            const form = button.closest("form");
-            const expenseId = button.getAttribute("data-expense-id");
+<!-- Add the SweetAlert2 CDN links -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.all.min.js"></script>
 
-            Swal.fire({
-                title: 'Are you sure?',
-                text: "You won't be able to revert this!",
-                icon: 'warning',
-                showCancelButton: true,
-                confirmButtonColor: '#3085d6',
-                cancelButtonColor: '#d33',
-                confirmButtonText: 'Yes, delete it!',
-                reverseButtons: true
-            }).then((result) => {
-                if (result.isConfirmed) {
-                    form.submit(); // Submit the form if confirmed
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle expense form submissions
+        const expenseForm = document.getElementById('expenseForm');
+        if (expenseForm) {
+            expenseForm.addEventListener('submit', function(e) {
+                // Form validation
+                const amount = document.getElementById('amount').value;
+                const category = document.getElementById('category').value;
+                const description = document.getElementById('description').value;
+                const date = document.getElementById('date').value;
+
+                if (!amount || !category || !description || !date) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please fill in all required fields',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+
+                if (amount <= 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Amount',
+                        text: 'Please enter a positive amount',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
                 }
             });
-        });
-    });
-});
+        }
 
+        // Handle delete confirmations
+        const deleteForms = document.querySelectorAll('.delete-expense-form');
+        deleteForms.forEach(form => {
+            const deleteBtn = form.querySelector('.delete-btn');
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    Swal.fire({
+                        title: 'Are you sure?',
+                        text: "You won't be able to revert this!",
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#3085d6',
+                        cancelButtonColor: '#d33',
+                        confirmButtonText: 'Yes, delete it!'
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            }
+        });
+
+        // Show success messages
+        <?php if (isset($_SESSION['success_message'])): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: <?php echo json_encode($_SESSION['success_message']); ?>,
+                confirmButtonColor: '#3085d6'
+            });
+            <?php unset($_SESSION['success_message']); ?>
+        <?php endif; ?>
+
+        // Show error messages
+        <?php if (isset($_SESSION['error'])): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: <?php echo json_encode($_SESSION['error']); ?>,
+                confirmButtonColor: '#3085d6'
+            });
+            <?php unset($_SESSION['error']); ?>
+        <?php endif; ?>
+    });
 </script>
 
 <?php $conn->close(); ?>
