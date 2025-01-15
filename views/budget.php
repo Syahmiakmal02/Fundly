@@ -401,20 +401,6 @@ $categories = getCategories();
             });
         });
 
-        // Handle sorting alerts
-        const filterBtns = document.querySelectorAll('.filter-btn');
-        filterBtns.forEach(btn => {
-            btn.addEventListener('click', function() {
-                Swal.fire({
-                    icon: 'info',
-                    title: 'Sorting...',
-                    text: 'Table is being sorted',
-                    showConfirmButton: false,
-                    timer: 800
-                });
-            });
-        });
-
         // Show success messages
         <?php if (isset($_SESSION['success_message'])): ?>
             Swal.fire({
@@ -444,47 +430,38 @@ $categories = getCategories();
         amount: 'asc'
     };
 
-    // Filter table function with alert
+    // Filter table function without alert
     function filterTable(column) {
-        Swal.fire({
-            title: 'Sorting...',
-            text: 'Sorting by ' + column,
-            timer: 800,
-            timerProgressBar: true,
-            showConfirmButton: false,
-            didOpen: () => {
-                let table, rows, switching, i, x, y, shouldSwitch;
-                table = document.getElementById("budgetTable");
-                switching = true;
-                let direction = sortDirections[column];
+        let table, rows, switching, i, x, y, shouldSwitch;
+        table = document.getElementById("budgetTable");
+        switching = true;
+        let direction = sortDirections[column];
 
-                while (switching) {
-                    switching = false;
-                    rows = table.rows;
-                    for (i = 0; i < (rows.length - 1); i++) {
-                        shouldSwitch = false;
-                        x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
-                        y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
-                        if (direction === 'asc') {
-                            if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
-                                shouldSwitch = true;
-                                break;
-                            }
-                        } else {
-                            if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
-                                shouldSwitch = true;
-                                break;
-                            }
-                        }
+        while (switching) {
+            switching = false;
+            rows = table.rows;
+            for (i = 0; i < (rows.length - 1); i++) {
+                shouldSwitch = false;
+                x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
+                y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
+                if (direction === 'asc') {
+                    if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
+                        shouldSwitch = true;
+                        break;
                     }
-                    if (shouldSwitch) {
-                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                        switching = true;
+                } else {
+                    if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
+                        shouldSwitch = true;
+                        break;
                     }
                 }
-                sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
             }
-        });
+            if (shouldSwitch) {
+                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                switching = true;
+            }
+        }
+        sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
     }
 
     function getColumnIndex(column) {
