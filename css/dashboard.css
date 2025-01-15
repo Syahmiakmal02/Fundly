@@ -99,65 +99,162 @@
     color: #666;
 }
 
-.card-savings {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    background: white;
-    padding-top: 20px;
-    border-radius: 15px;
-    margin-top: 20px;
-    margin-bottom: 20px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    width: 100%;
-}
-
-.container {
-    width: 100%;
-    margin: 0 0;
-}
-
-.progress {
-    height: 40px;
-    border-radius: 10px;
-    background-color: #f3f3f3;
-    overflow: hidden;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
-}
-
-.progress-bar {
-    font-size: 14px;
-    height: 100%;
-    line-height: 40px;
-    background-color: #2563eb;
-    color: white;
-    font-weight: bold;
-    text-align: center;
-    transition: width 0.5s ease-in-out;
-}
-
-.progress-text-center {
-    width: 100%;
-    font-size: 14px;
-    height: 100%;
-    line-height: 40px;
-    color: black;
-    font-weight: bold;
-    text-align: center;
-}
-
-.saving-amount {
-    color: #2e7d32;
-    font-weight: bold;
-}
-
 .savings-dashboard {
-    font-family: Arial, sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, sans-serif;
     margin: 0;
     padding: 0;
     background-color: #f8f9fa;
 }
 
+.card-savings {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    width: 100%;
+    margin: 20px 0;
+}
+
+.savings-header-content {
+    width: 100%;
+}
+
+.card-header {
+    margin-bottom: 32px;
+}
+
+.savings-stats {
+    margin-top: 16px;
+}
+
+.stat-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.stat-label {
+    color: #64748b;
+    font-size: 0.875rem;
+}
+
+.saving-amount {
+    color: #0f766e;
+    font-size: 1.5rem;
+    margin: 0;
+}
+
+.total-amount {
+    color: #64748b;
+    font-size: 1.25rem;
+}
+
+.savings-container {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.saving-goal-card {
+    background: #f8fafc;
+    border-radius: 8px;
+    padding: 16px;
+    transition: transform 0.2s ease;
+}
+
+.saving-goal-card:hover {
+    transform: translateY(-2px);
+}
+
+.goal-info {
+    margin-bottom: 12px;
+}
+
+.goal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.goal-name {
+    font-size: 1.125rem;
+    color: #1e293b;
+    margin: 0;
+}
+
+.goal-account {
+    font-size: 0.875rem;
+    color: #64748b;
+    background: #e2e8f0;
+    padding: 4px 8px;
+    border-radius: 4px;
+}
+
+.goal-details {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.875rem;
+    color: #64748b;
+}
+
+.progress {
+    height: 8px;
+    background-color: #e2e8f0;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #0891b2, #0e7490);
+    transition: width 0.5s ease-in-out;
+    position: relative;
+}
+
+.progress-text {
+    position: absolute;
+    right: 8px;
+    top: -18px;
+    font-size: 0.75rem;
+    color: #0e7490;
+    font-weight: 500;
+}
+
+.pagination-controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.pagination-btn {
+    padding: 8px 16px;
+    border: 1px solid #e2e8f0;
+    background: white;
+    border-radius: 6px;
+    color: #1e293b;
+    cursor: pointer;
+    font-size: 0.875rem;
+    transition: all 0.2s ease;
+}
+
+.pagination-btn:hover:not(:disabled) {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.pagination-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.page-indicator {
+    font-size: 0.875rem;
+    color: #64748b;
+}
 @media (max-width: 768px) {
     .savings-dashboard .card-savings {
         width: 100%;
