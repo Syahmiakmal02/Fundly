@@ -202,16 +202,15 @@ $message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
 unset($_SESSION['message']);
 ?>
 
+<!-- Add the SweetAlert2 CDN links -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/limonte-sweetalert2/11.7.32/sweetalert2.all.min.js"></script>
+
 <div class="dashboard-container">
     <!-- Left Column - Budget Form -->
     <div class="budget-form-section">
         <div class="card budget-form-card">
             <h2><?php echo $edit_data ? 'Edit Budget Entry' : 'Add New Budget Entry'; ?></h2>
-            <?php if (!empty($message)): ?>
-                <div class="message <?php echo strpos($message, 'successfully') !== false ? 'success' : 'error'; ?>">
-                    <?php echo $message; ?>
-                </div>
-            <?php endif; ?>
 
             <form id="budgetForm" action="index.php?page=budget<?php echo $edit_data ? '&edit=1&budget_id=' . $edit_data['budget_id'] : ''; ?>" method="POST">
                 <?php if ($edit_data): ?>
@@ -284,13 +283,13 @@ unset($_SESSION['message']);
                                     </td>
                                     <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
                                     <td>
-                                            <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
-                                            <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this entry?');">
-                                                <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
-                                                <input type="hidden" name="delete" value="1">
-                                                <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
-                                            </form>
-                                        </td>
+                                        <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
+                                        <form method="POST" style="display: inline;" class="delete-form">
+                                            <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
+                                            <input type="hidden" name="delete" value="1">
+                                            <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
+                                        </form>
+                                    </td>
                                 </tr>
                             <?php endwhile; ?>
                         </tbody>
@@ -341,70 +340,116 @@ unset($_SESSION['message']);
         </div>
     </div>
 </div>
+
 <script>
-    let sortDirections = {
-        month: 'asc',
-        category: 'asc',
-        amount: 'asc'
-    };
-
-    function filterTable(column) {
-        var table, rows, switching, i, x, y, shouldSwitch;
-        table = document.getElementById("budgetTable");
-        switching = true;
-        let direction = sortDirections[column];
-
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            for (i = 0; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-                x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
-                y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
-                if (direction === 'asc') {
-                    if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
-                        shouldSwitch = true;
-                        break;
+    document.addEventListener('DOMContentLoaded', function() {
+        // Handle delete confirmation
+        const deleteForms = document.querySelectorAll('.delete-form');
+        deleteForms.forEach(form => {
+            form.addEventListener('submit', function(e) {
+                e.preventDefault();
+                Swal.fire({
+                    title: 'Are you sure?',
+                    text: "You won't be able to revert this!",
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#3085d6',
+                    cancelButtonColor: '#d33',
+                    confirmButtonText: 'Yes, delete it!'
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        this.submit();
                     }
-                } else {
-                    if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
-                        shouldSwitch = true;
-                        break;
+                });
+            });
+        });
+
+        // Show success message if it exists
+        <?php if (isset($_SESSION['message']) && strpos($_SESSION['message'], 'successfully') !== false): ?>
+            Swal.fire({
+                icon: 'success',
+                title: 'Success!',
+                text: <?php echo json_encode($_SESSION['message']); ?>,
+                confirmButtonColor: '#3085d6'
+            });
+            <?php unset($_SESSION['message']); ?>
+        <?php endif; ?>
+
+        // Show error message if it exists
+        <?php if (isset($_SESSION['message']) && strpos($_SESSION['message'], 'successfully') === false): ?>
+            Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: <?php echo json_encode($_SESSION['message']); ?>,
+                confirmButtonColor: '#3085d6'
+            });
+            <?php unset($_SESSION['message']); ?>
+        <?php endif; ?>
+
+        let sortDirections = {
+            month: 'asc',
+            category: 'asc',
+            amount: 'asc'
+        };
+
+        function filterTable(column) {
+            var table, rows, switching, i, x, y, shouldSwitch;
+            table = document.getElementById("budgetTable");
+            switching = true;
+            let direction = sortDirections[column];
+
+            while (switching) {
+                switching = false;
+                rows = table.rows;
+                for (i = 0; i < (rows.length - 1); i++) {
+                    shouldSwitch = false;
+                    x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
+                    y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
+                    if (direction === 'asc') {
+                        if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
+                            shouldSwitch = true;
+                            break;
+                        }
+                    } else {
+                        if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
+                            shouldSwitch = true;
+                            break;
+                        }
                     }
                 }
+                if (shouldSwitch) {
+                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                    switching = true;
+                }
             }
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
+
+            // Toggle the direction for the next click
+            sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
+        }
+
+        function getColumnIndex(column) {
+            switch (column) {
+                case 'month':
+                    return 0;
+                case 'category':
+                    return 1;
+                case 'amount':
+                    return 2;
+                default:
+                    return 0;
             }
         }
 
-        // Toggle the direction for the next click
-        sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
-    }
-
-    function getColumnIndex(column) {
-        switch (column) {
-            case 'month':
-                return 0;
-            case 'category':
-                return 1;
-            case 'amount':
-                return 2;
-            default:
-                return 0;
+        function compareValues(a, b, column) {
+            if (column === 'amount') {
+                return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
+            } else if (column === 'month') {
+                return new Date(a) - new Date(b);
+            } else {
+                return a.localeCompare(b);
+            }
         }
-    }
-
-    function compareValues(a, b, column) {
-        if (column === 'amount') {
-            return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
-        } else if (column === 'month') {
-            return new Date(a) - new Date(b);
-        } else {
-            return a.localeCompare(b);
-        }
-    }
+    });
 </script>
 
 <?php $conn->close(); ?>
