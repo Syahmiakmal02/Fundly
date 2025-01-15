@@ -138,73 +138,19 @@ $conn->close();
                 <div class="chart-container">
                     <canvas id="expenseChart"></canvas>
                 </div>
-                <table class="data-table">
+                <table class="data-table" id="expenseTable">
                     <thead>
                         <tr>
                             <th>Month</th>
                             <th>Total Expenses</th>
-                            <th>Description</th>
+                            <th>Category</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <?php foreach ($expense_data as $month => $categories): ?>
-                            <tr>
-                                <td><?php echo date('M Y', strtotime($month)); ?></td>
-                                <td>RM <?php echo number_format(array_sum($categories), 2); ?></td>
-                                <td>
-                                    <ul>
-                                        <?php
-                                        foreach ($categories as $category => $amount) {
-                                            echo "<li>$category: RM " . number_format($amount, 2) . "</li>";
-                                        }
-                                        ?>
-                                    </ul>
-                                </td>
-                            </tr>
-                        <?php endforeach; ?>
+                        <!-- Will be populated by JavaScript -->
                     </tbody>
                 </table>
             <?php endif; ?>
-        </div>
-    </div>
-
-    <!-- Enhanced Savings Dashboard -->
-    <div class="savings-dashboard">
-        <div class="card-savings">
-            <?php
-            $total_collected_amount = 0;
-            $total_saving = 0;
-            while ($row = $saving_data->fetch_assoc()) {
-                $total_saving += $row['goal_amount'];
-                $total_collected_amount += $row['collected_amount'];
-            }
-            ?>
-            <div class="card-header">
-                <div class="savings-header-content">
-                    <h2 class="card-title">Target Savings</h2>
-                    <div class="savings-stats">
-                        <div class="stat-item">
-                            <span class="stat-label">Total Progress</span>
-                            <h3 class="saving-amount">
-                                RM <?php echo number_format($total_collected_amount, 2); ?>
-                                <span class="total-amount">/ RM <?php echo number_format($total_saving, 2); ?></span>
-                            </h3>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <div class="savings-content">
-                <div id="savingsContainer" class="savings-container"></div>
-                
-                <div class="pagination-controls">
-                    <button id="prevPage" class="pagination-btn">&lt; Previous</button>
-                    <div id="pageIndicator" class="page-indicator">
-                        Page <span id="currentPage">1</span> of <span id="totalPages">1</span>
-                    </div>
-                    <button id="nextPage" class="pagination-btn">Next &gt;</button>
-                </div>
-            </div>
         </div>
     </div>
 </div>
@@ -277,6 +223,33 @@ $conn->close();
 
                 document.getElementById('currentMonth').textContent = formatMonth(monthStr);
                 updateNavigationButtons();
+
+                // Update the expense table for the current month
+                const tableBody = document.querySelector('#expenseTable tbody');
+                tableBody.innerHTML = ''; // Clear existing rows
+
+                const monthTotal = Object.values(monthData).reduce((sum, amount) => sum + amount, 0);
+                const row = document.createElement('tr');
+
+                // Create table cells
+                row.innerHTML = `
+                    <td>${formatMonth(monthStr)}</td>
+                    <td>RM ${monthTotal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                    <td>
+                        <ul>
+                            ${Object.entries(monthData)
+                                .map(([category, amount]) => 
+                                    `<li>${category}: RM ${amount.toLocaleString('en-US', {
+                                        minimumFractionDigits: 2, 
+                                        maximumFractionDigits: 2
+                                    })}</li>`
+                                )
+                                .join('')}
+                        </ul>
+                    </td>
+                `;
+
+                tableBody.appendChild(row);
             };
 
             const updateNavigationButtons = () => {
@@ -308,89 +281,5 @@ $conn->close();
 
             updateExpenseChart(months[currentMonthIndex]);
         <?php endif; ?>
-
-        // Savings Pagination
-        <?php 
-        $saving_data->data_seek(0);
-        $savings = [];
-        while ($row = $saving_data->fetch_assoc()) {
-            $savings[] = $row;
-        }
-        ?>
-        const savingsData = <?php echo json_encode($savings); ?>;
-        const itemsPerPage = 3;
-        let currentPage = 1;
-        const totalPages = Math.ceil(savingsData.length / itemsPerPage);
-
-        function updatePageIndicator() {
-            document.getElementById('currentPage').textContent = currentPage;
-            document.getElementById('totalPages').textContent = totalPages;
-            
-            document.getElementById('prevPage').disabled = currentPage === 1;
-            document.getElementById('nextPage').disabled = currentPage === totalPages;
-        }
-
-        function displaySavings(page) {
-            const container = document.getElementById('savingsContainer');
-            container.innerHTML = '';
-            
-            const start = (page - 1) * itemsPerPage;
-            const end = Math.min(start + itemsPerPage, savingsData.length);
-            
-            for (let i = start; i < end; i++) {
-                const saving = savingsData[i];
-                const percentage = (saving.collected_amount / saving.goal_amount) * 100;
-                
-                const savingCard = document.createElement('div');
-                savingCard.className = 'saving-goal-card';
-                
-                const dueDate = new Date(saving.due_date).toLocaleDateString('en-US', {
-                    year: 'numeric',
-                    month: 'long',
-                    day: 'numeric'
-                });
-                
-                savingCard.innerHTML = `
-                    <div class="goal-info">
-                        <div class="goal-header">
-                            <h3 class="goal-name">${saving.goal_name}</h3>
-                            <span class="goal-account">${saving.account}</span>
-                        </div>
-                        <div class="goal-details">
-                            <span class="due-date">Due: ${dueDate}</span>
-                            <span class="amount-text">
-                                RM ${Number(saving.collected_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})} 
-                                / RM ${Number(saving.goal_amount).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2})}
-                            </span>
-                        </div>
-                    </div>
-                    <div class="progress">
-                        <div class="progress-bar" style="width: ${percentage}%">
-                            <span class="progress-text">${percentage.toFixed(1)}%</span>
-                        </div>
-                    </div>
-                `;
-                
-                container.appendChild(savingCard);
-            }
-            
-            updatePageIndicator();
-        }
-
-        document.getElementById('prevPage').addEventListener('click', () => {
-            if (currentPage > 1) {
-                currentPage--;
-                displaySavings(currentPage);
-            }
-        });
-
-        document.getElementById('nextPage').addEventListener('click', () => {
-            if (currentPage < totalPages) {
-                currentPage++;
-                displaySavings(currentPage);
-            }
-        });
-
-        displaySavings(currentPage);
     });
 </script>
