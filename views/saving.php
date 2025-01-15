@@ -125,7 +125,7 @@ $savings_data = fetchSavingGoals($conn, $user_id);
 <div class="dashboard-container">
     <!-- Left Column - Add Goal Form -->
     <div class="add-goal-section">
-        <div class="card">
+        <div class="card saving-form-card">
             <h2>Add Saving Goal</h2>
             <form action="index.php?page=saving" method="POST">
                 <input type="hidden" name="action" value="add">

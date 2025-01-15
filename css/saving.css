@@ -7,7 +7,7 @@
 }
 
 /* Card Styles */
-.card {
+.dashboard-container .card {
     background: white;
     border-radius: 12px;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -23,6 +23,11 @@
 
 .form-group {
     margin-bottom: 1.25rem;
+}
+
+.saving-form-card {
+    position: sticky;
+    top: 1.5rem;
 }
 
 label {
@@ -48,9 +53,11 @@ input:focus {
 }
 
 /* Summary Card */
-.summary-card {
-    background: linear-gradient(135deg, #00C853 0%, #84d725 100%);
+.dashboard-container .summary-card {
+    background: linear-gradient(135deg, #00C853 0%, #84d725 100%); /* Red gradient */
     color: white;
+    box-shadow: none; /* Override the shadow from .card */
+    border-radius: 12px; /* Retain if needed */
 }
 
 .summary-card h3 {

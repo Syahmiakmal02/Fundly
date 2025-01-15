@@ -211,36 +211,76 @@ h4{
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
 }
 
-.footer p {
-    margin: 5px 0;
-    font-size: 14px;
-    font-weight: bold;
-    color: #555;
+.footer {
+    width: 100%;
+    padding: 30px 24px;
+    background-color: #fafafa;
+    border-top: 1px solid #eee;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
 }
 
-.footer .team-members {
-    margin-top: 10px;
-}
-
-.footer .team-members h4 {
-    margin-bottom: 5px;
-    font-size: 16px;
-    font-weight: bold;
-    color: #444;
-}
-
-.footer .team-members p {
-    font-size: 14px;
-    color: #555;
-    line-height: 1.6;
+.footer-container {
+    max-width: 1000px;
     margin: 0 auto;
-    display: inline-block;
-    max-width: 80%;
+    text-align: center;
 }
 
-.footer .team-members p span {
-    display: inline-block;
-    margin: 0 5px;
+.footer-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+}
+
+.copyright {
+    color: #666;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
+}
+
+.divider {
+    width: 64px;
+    height: 1px;
+    background-color: #e0e0e0;
+    border: none;
+    margin: 0;
+}
+
+.team-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.team-title {
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin: 0;
+}
+
+.team-members {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.6;
+    margin: 0;
+    max-width: 800px;
+}
+
+.team-member {
+    transition: color 0.2s ease;
+}
+
+.team-member:hover {
+    color: #333;
+}
+
+.separator {
+    color: #ccc;
+    margin: 0 8px;
 }
 
 

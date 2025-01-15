@@ -199,7 +199,6 @@ $conn->close();
             <?php endwhile; ?>
         </div>
     </div>
-
 </div>
 
 <script>
@@ -243,7 +242,7 @@ $conn->close();
                     datasets: [{
                         label: 'Monthly Expenses',
                         data: Object.values(<?php echo json_encode($expense_data); ?>).map(m => Object.values(m).reduce((a, b) => a + b, 0)),
-                        backgroundColor: colors[3]
+                        backgroundColor: colors
                     }]
                 },
                 options: {
