@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <link rel="stylesheet" href="../css/landingPage.css">
     <meta charset="UTF-8">
@@ -11,6 +12,7 @@
     <link rel="shortcut icon" href="/imgs/logo.png" type="image/x-icon">
     <script src="https://kit.fontawesome.com/a076d05399.js" crossorigin="anonymous"></script>
 </head>
+
 <body>
     <nav class="landing-nav">
         <div class="nav-content">
@@ -22,8 +24,8 @@
                 <a href="../auth/login.php" class="login-btn">Login</a>
                 <a href="../auth/register.php" class="register-btn">Get Started</a>
                 <button
-                id="theme-toggle">
-                <i class="fas fa-sun" id="theme-icon"></i>
+                    id="theme-toggle">
+                    <i class="fas fa-sun" id="theme-icon"></i>
                 </button>
             </div>
         </div>
@@ -31,7 +33,7 @@
 
     <main class="hero-section">
         <div class="hero-content">
-            <h1>Take Control of Your Student Finances</h1>
+            <h1>Take Control of Your Personal Finances</h1>
             <p>Track expenses, set budgets, and achieve your savings goals with Fundly - your personal financial companion.</p>
             <div class="cta-buttons">
                 <a href="auth/register.php" class="primary-btn">Start For Free</a>
@@ -64,16 +66,25 @@
         </div>
     </section>
 
-    <footer class="landing-footer">
-        <div class="footer-content">
-            <p>&copy; 2025 Fundly. All rights reserved.</p>
-            <div class="footer-links">
-                <a href="#">Privacy Policy</a>
-                <a href="#">Terms of Service</a>
-                <a href="#">Contact</a>
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-content">
+                <p class="copyright">&copy; 2024 Fundly</p>
+                <hr class="divider">
+                <div class="team-section">
+                    <h4 class="team-title">Creators</h4>
+                    <p class="team-members">
+                        <span class="team-member">SHAMER (D20221101867)</span>
+                        <span class="separator">&bull;</span>
+                        <span class="team-member">SYAHMI AKMAL (D20221101856)</span>
+                        <span class="separator">&bull;</span>
+                        <span class="team-member">MOHAMAD AMIRUL AIZAD (D20221101863)</span>
+                    </p>
+                </div>
             </div>
         </div>
     </footer>
+    
     <script>
         // script.js
         const themeToggleButton = document.getElementById("theme-toggle");
@@ -82,24 +93,25 @@
 
         // Apply saved theme on page load
         if (currentTheme) {
-        document.documentElement.setAttribute("data-theme", currentTheme);
-        themeIcon.className =
-            currentTheme === "dark" ? "fas fa-moon" : "fas fa-sun"; // Switch icon
+            document.documentElement.setAttribute("data-theme", currentTheme);
+            themeIcon.className =
+                currentTheme === "dark" ? "fas fa-moon" : "fas fa-sun"; // Switch icon
         }
 
         themeToggleButton.addEventListener("click", () => {
-        const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
+            const isDarkMode = document.documentElement.getAttribute("data-theme") === "dark";
 
-        // Toggle theme
-        const newTheme = isDarkMode ? "light" : "dark";
-        document.documentElement.setAttribute("data-theme", newTheme);
+            // Toggle theme
+            const newTheme = isDarkMode ? "light" : "dark";
+            document.documentElement.setAttribute("data-theme", newTheme);
 
-        // Save preference to localStorage
-        localStorage.setItem("theme", newTheme);
+            // Save preference to localStorage
+            localStorage.setItem("theme", newTheme);
 
-        // Update icon
-        themeIcon.className = newTheme === "dark" ? "fas fa-moon" : "fas fa-sun";
+            // Update icon
+            themeIcon.className = newTheme === "dark" ? "fas fa-moon" : "fas fa-sun";
         });
     </script>
 </body>
+
 </html>

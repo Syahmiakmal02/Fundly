@@ -84,7 +84,6 @@ $stmt->close();
 $conn->close();
 ?>
 
-
 <div class="dashboard-container">
     <div class="dashboard-grid">
         <!-- Budget Overview -->
@@ -124,10 +123,18 @@ $conn->close();
         <div class="dashboard-card">
             <div class="card-header">
                 <h2 class="card-title">Monthly Expenses</h2>
+                <div class="total-expenses" id="totalMonthlyExpenses">
+                    Total: RM <span id="monthlyTotal">0.00</span>
+                </div>
             </div>
             <?php if (empty($expense_data)): ?>
                 <div class="no-data">No expense data available</div>
             <?php else: ?>
+                <div class="chart-navigation">
+                    <button id="prevMonth" class="nav-button">&lt; Previous</button>
+                    <span id="currentMonth"></span>
+                    <button id="nextMonth" class="nav-button">Next &gt;</button>
+                </div>
                 <div class="chart-container">
                     <canvas id="expenseChart"></canvas>
                 </div>
@@ -145,13 +152,13 @@ $conn->close();
                                 <td><?php echo date('M Y', strtotime($month)); ?></td>
                                 <td>RM <?php echo number_format(array_sum($categories), 2); ?></td>
                                 <td>
-                                    <?php
-                                    $descriptions = [];
-                                    foreach ($categories as $category => $amount) {
-                                        $descriptions[] = "$category: RM " . number_format($amount, 2);
-                                    }
-                                    echo implode(', ', $descriptions);
-                                    ?>
+                                    <ul>
+                                        <?php
+                                        foreach ($categories as $category => $amount) {
+                                            echo "<li>$category: RM " . number_format($amount, 2) . "</li>";
+                                        }
+                                        ?>
+                                    </ul>
                                 </td>
                             </tr>
                         <?php endforeach; ?>
@@ -202,7 +209,6 @@ $conn->close();
 </div>
 
 <script>
-    // Simple chart initialization with minimal configuration
     document.addEventListener('DOMContentLoaded', function() {
         const colors = [
             '#FF6384', '#36A2EB', '#FFCE56', '#4BC0C0', '#9966FF',
@@ -227,34 +233,98 @@ $conn->close();
             });
         <?php endif; ?>
 
-        // Expenses Chart
+        // Modified Expenses Chart
         <?php if (!empty($expense_data)): ?>
-            new Chart(document.getElementById('expenseChart'), {
-                type: 'bar',
-                data: {
-                    labels: Object.keys(<?php echo json_encode($expense_data); ?>).map(m => {
-                        const [year, month] = m.split('-');
-                        return new Date(year, month - 1).toLocaleDateString('default', {
-                            month: 'short',
-                            year: '2-digit'
-                        });
-                    }),
-                    datasets: [{
-                        label: 'Monthly Expenses',
-                        data: Object.values(<?php echo json_encode($expense_data); ?>).map(m => Object.values(m).reduce((a, b) => a + b, 0)),
-                        backgroundColor: colors
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    scales: {
-                        y: {
-                            beginAtZero: true
-                        }
+            const expenseData = <?php echo json_encode($expense_data); ?>;
+            const months = Object.keys(expenseData).sort(); // Sort months chronologically
+            let currentMonthIndex = months.length - 1; // Start with most recent month
+
+            // Function to format month for display
+            const formatMonth = (monthStr) => {
+                const [year, month] = monthStr.split('-');
+                return new Date(year, month - 1).toLocaleDateString('default', {
+                    month: 'long',
+                    year: 'numeric'
+                });
+            };
+
+            // Function to update chart
+            let expenseChart;
+            const updateExpenseChart = (monthStr) => {
+                const monthData = expenseData[monthStr];
+                const total = Object.values(monthData).reduce((sum, amount) => sum + amount, 0);
+                document.getElementById('monthlyTotal').textContent = total.toFixed(2);
+                const categories = Object.keys(monthData);
+                const amounts = Object.values(monthData);
+
+                if (expenseChart) {
+                    expenseChart.destroy();
+                }
+
+                expenseChart = new Chart(document.getElementById('expenseChart'), {
+                    type: 'doughnut',
+                    data: {
+                        labels: categories,
+                        datasets: [{
+                            data: amounts,
+                            backgroundColor: colors.slice(0, categories.length)
+                        }]
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false
                     }
+                });
+
+                document.getElementById('currentMonth').textContent = formatMonth(monthStr);
+                updateNavigationButtons();
+            };
+
+            // Function to update navigation buttons
+            const updateNavigationButtons = () => {
+                const prevButton = document.getElementById('prevMonth');
+                const nextButton = document.getElementById('nextMonth');
+
+                // Update Previous button state
+                if (currentMonthIndex <= 0) {
+                    prevButton.disabled = true;
+                    prevButton.style.opacity = '0.5';
+                    prevButton.style.cursor = 'not-allowed';
+                } else {
+                    prevButton.disabled = false;
+                    prevButton.style.opacity = '1';
+                    prevButton.style.cursor = 'pointer';
+                }
+
+                // Update Next button state
+                if (currentMonthIndex >= months.length - 1) {
+                    nextButton.disabled = true;
+                    nextButton.style.opacity = '0.5';
+                    nextButton.style.cursor = 'not-allowed';
+                } else {
+                    nextButton.disabled = false;
+                    nextButton.style.opacity = '1';
+                    nextButton.style.cursor = 'pointer';
+                }
+            };
+
+            // Add event listeners for navigation
+            document.getElementById('prevMonth').addEventListener('click', () => {
+                if (currentMonthIndex > 0) {
+                    currentMonthIndex--;
+                    updateExpenseChart(months[currentMonthIndex]);
                 }
             });
+
+            document.getElementById('nextMonth').addEventListener('click', () => {
+                if (currentMonthIndex < months.length - 1) {
+                    currentMonthIndex++;
+                    updateExpenseChart(months[currentMonthIndex]);
+                }
+            });
+
+            // Initialize with latest month
+            updateExpenseChart(months[currentMonthIndex]);
         <?php endif; ?>
     });
 </script>

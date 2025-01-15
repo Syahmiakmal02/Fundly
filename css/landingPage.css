@@ -215,29 +215,40 @@ body {
     padding: 2rem 0;
 }
 
-.footer-content {
-    max-width: 1200px;
+/* Footer Styles */
+
+.footer {
+    width: 100%;
+    padding: 30px 24px;
+    background-color: var(--primary-color);
+    border-top: 1px solid #eee;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    color: var(--white) ;
+}
+
+.footer-container {
+    max-width: 1000px;
     margin: 0 auto;
-    padding: 0 2rem;
+    text-align: center;
+}
+
+.footer-content {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
+    gap: 8px;
 }
 
-.footer-links {
+.team-members {
     display: flex;
-    gap: 2rem;
+    gap: 15px; 
 }
 
-.footer-links a {
+.copyright {
     color: var(--white);
-    text-decoration: none;
-    opacity: 0.8;
-    transition: opacity 0.3s ease;
-}
-
-.footer-links a:hover {
-    opacity: 1;
+    font-size: 14px;
+    font-weight: 500;
+    margin: 0;
 }
 
 /* Responsive Design */
