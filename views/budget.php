@@ -52,12 +52,14 @@ function handleInsert($conn, $user_id, $data)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Budget entry successfully saved!";
+            $_SESSION['success_message'] = "Budget entry successfully saved!";
             header("Location: index.php?page=budget");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -78,12 +80,14 @@ function handleUpdate($conn, $user_id, $data)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Budget entry updated successfully!";
+            $_SESSION['success_message'] = "Budget entry updated successfully!";
             header("Location: index.php?page=budget");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -100,12 +104,14 @@ function handleDelete($conn, $user_id, $budget_id)
         $stmt->close();
 
         if ($success) {
-            $_SESSION['message'] = "Budget entry deleted successfully!";
+            $_SESSION['success_message'] = "Budget entry deleted successfully!";
             header("Location: index.php?page=budget");
             exit();
         }
+        $_SESSION['error'] = $error;
         return $error;
     }
+    $_SESSION['error'] = "Failed to prepare statement";
     return "Failed to prepare statement";
 }
 
@@ -198,8 +204,6 @@ $budgets = fetchBudgetEntries($conn, $user_id, $entries_per_page, $current_page)
 $total_budget = calculateTotalBudget($conn, $user_id);
 $total_pages = getPaginationData($conn, $user_id, $entries_per_page);
 $categories = getCategories();
-$message = isset($_SESSION['message']) ? $_SESSION['message'] : '';
-unset($_SESSION['message']);
 ?>
 
 <!-- Add the SweetAlert2 CDN links -->
@@ -211,7 +215,6 @@ unset($_SESSION['message']);
     <div class="budget-form-section">
         <div class="card budget-form-card">
             <h2><?php echo $edit_data ? 'Edit Budget Entry' : 'Add New Budget Entry'; ?></h2>
-
             <form id="budgetForm" action="index.php?page=budget<?php echo $edit_data ? '&edit=1&budget_id=' . $edit_data['budget_id'] : ''; ?>" method="POST">
                 <?php if ($edit_data): ?>
                     <input type="hidden" name="budget_id" value="<?php echo $edit_data['budget_id']; ?>">
@@ -284,7 +287,7 @@ unset($_SESSION['message']);
                                     <td>RM <?php echo number_format($budget['amount'], 2); ?></td>
                                     <td>
                                         <a href="index.php?page=budget&edit=1&budget_id=<?php echo $budget['budget_id']; ?>" class="action-btn edit-btn"><i class="fas fa-edit"></i></a>
-                                        <form method="POST" style="display: inline;" class="delete-form">
+                                        <form method="POST" style="display: inline;" onsubmit="return false;" class="delete-form">
                                             <input type="hidden" name="budget_id" value="<?php echo $budget['budget_id']; ?>">
                                             <input type="hidden" name="delete" value="1">
                                             <button type="submit" class="action-btn delete-btn"><i class="fas fa-trash-alt"></i></button>
@@ -343,7 +346,40 @@ unset($_SESSION['message']);
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
-        // Handle delete confirmation
+        // Handle all form submissions
+        const budgetForm = document.getElementById('budgetForm');
+        if (budgetForm) {
+            budgetForm.addEventListener('submit', function(e) {
+                // Form validation
+                const amount = document.getElementById('amount').value;
+                const category = document.getElementById('category').value;
+                const month = document.getElementById('month').value;
+
+                if (!amount || !category || !month) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Validation Error',
+                        text: 'Please fill in all required fields',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+
+                if (amount <= 0) {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Invalid Amount',
+                        text: 'Please enter a positive amount',
+                        confirmButtonColor: '#3085d6'
+                    });
+                    return false;
+                }
+            });
+        }
+
+        // Handle delete confirmations
         const deleteForms = document.querySelectorAll('.delete-form');
         deleteForms.forEach(form => {
             form.addEventListener('submit', function(e) {
@@ -358,98 +394,121 @@ unset($_SESSION['message']);
                     confirmButtonText: 'Yes, delete it!'
                 }).then((result) => {
                     if (result.isConfirmed) {
-                        this.submit();
+                        form.onsubmit = null;
+                        form.submit();
                     }
                 });
             });
         });
 
-        // Show success message if it exists
-        <?php if (isset($_SESSION['message']) && strpos($_SESSION['message'], 'successfully') !== false): ?>
+        // Handle sorting alerts
+        const filterBtns = document.querySelectorAll('.filter-btn');
+        filterBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sorting...',
+                    text: 'Table is being sorted',
+                    showConfirmButton: false,
+                    timer: 800
+                });
+            });
+        });
+
+        // Show success messages
+        <?php if (isset($_SESSION['success_message'])): ?>
             Swal.fire({
                 icon: 'success',
                 title: 'Success!',
-                text: <?php echo json_encode($_SESSION['message']); ?>,
+                text: <?php echo json_encode($_SESSION['success_message']); ?>,
                 confirmButtonColor: '#3085d6'
             });
-            <?php unset($_SESSION['message']); ?>
+            <?php unset($_SESSION['success_message']); ?>
         <?php endif; ?>
 
-        // Show error message if it exists
-        <?php if (isset($_SESSION['message']) && strpos($_SESSION['message'], 'successfully') === false): ?>
+        // Show error messages
+        <?php if (isset($_SESSION['error'])): ?>
             Swal.fire({
                 icon: 'error',
                 title: 'Error',
-                text: <?php echo json_encode($_SESSION['message']); ?>,
+                text: <?php echo json_encode($_SESSION['error']); ?>,
                 confirmButtonColor: '#3085d6'
             });
-            <?php unset($_SESSION['message']); ?>
+            <?php unset($_SESSION['error']); ?>
         <?php endif; ?>
+    });
 
-        let sortDirections = {
-            month: 'asc',
-            category: 'asc',
-            amount: 'asc'
-        };
+    let sortDirections = {
+        month: 'asc',
+        category: 'asc',
+        amount: 'asc'
+    };
 
-        function filterTable(column) {
-            var table, rows, switching, i, x, y, shouldSwitch;
-            table = document.getElementById("budgetTable");
-            switching = true;
-            let direction = sortDirections[column];
+    // Filter table function with alert
+    function filterTable(column) {
+        Swal.fire({
+            title: 'Sorting...',
+            text: 'Sorting by ' + column,
+            timer: 800,
+            timerProgressBar: true,
+            showConfirmButton: false,
+            didOpen: () => {
+                let table, rows, switching, i, x, y, shouldSwitch;
+                table = document.getElementById("budgetTable");
+                switching = true;
+                let direction = sortDirections[column];
 
-            while (switching) {
-                switching = false;
-                rows = table.rows;
-                for (i = 0; i < (rows.length - 1); i++) {
-                    shouldSwitch = false;
-                    x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
-                    y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
-                    if (direction === 'asc') {
-                        if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
-                            shouldSwitch = true;
-                            break;
-                        }
-                    } else {
-                        if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
-                            shouldSwitch = true;
-                            break;
+                while (switching) {
+                    switching = false;
+                    rows = table.rows;
+                    for (i = 0; i < (rows.length - 1); i++) {
+                        shouldSwitch = false;
+                        x = rows[i].getElementsByTagName("TD")[getColumnIndex(column)];
+                        y = rows[i + 1].getElementsByTagName("TD")[getColumnIndex(column)];
+                        if (direction === 'asc') {
+                            if (compareValues(x.innerHTML, y.innerHTML, column) > 0) {
+                                shouldSwitch = true;
+                                break;
+                            }
+                        } else {
+                            if (compareValues(x.innerHTML, y.innerHTML, column) < 0) {
+                                shouldSwitch = true;
+                                break;
+                            }
                         }
                     }
+                    if (shouldSwitch) {
+                        rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                        switching = true;
+                    }
                 }
-                if (shouldSwitch) {
-                    rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                    switching = true;
-                }
+                sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
             }
+        });
+    }
 
-            // Toggle the direction for the next click
-            sortDirections[column] = direction === 'asc' ? 'desc' : 'asc';
+    function getColumnIndex(column) {
+        switch (column) {
+            case 'month':
+                return 0;
+            case 'category':
+                return 1;
+            case 'amount':
+                return 2;
+            default:
+                return 0;
         }
+    }
 
-        function getColumnIndex(column) {
-            switch (column) {
-                case 'month':
-                    return 0;
-                case 'category':
-                    return 1;
-                case 'amount':
-                    return 2;
-                default:
-                    return 0;
-            }
+    function compareValues(a, b, column) {
+        if (column === 'amount') {
+            return parseFloat(a.replace('RM ', '').replace(',', '')) - parseFloat(b.replace('RM ', '').replace(',', ''));
+        } else if (column === 'month') {
+            return new Date(a) - new Date(b);
+        } else {
+            return a.localeCompare(b);
         }
-
-        function compareValues(a, b, column) {
-            if (column === 'amount') {
-                return parseFloat(a.replace('RM ', '')) - parseFloat(b.replace('RM ', ''));
-            } else if (column === 'month') {
-                return new Date(a) - new Date(b);
-            } else {
-                return a.localeCompare(b);
-            }
-        }
-    });
+    }
 </script>
 
 <?php $conn->close(); ?>
